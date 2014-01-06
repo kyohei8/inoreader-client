@@ -1,0 +1,15 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+    meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"
+    meta content="width=device-width" name="viewport"
+    title
+      | User tags and folders
+  body
+    h1 User tags and folders
+    h4 tags
+    ul
+      - @tags.each do |item|
+        li = "id: #{item['id']}"
+        li = "sortid: #{item['sortid']}"

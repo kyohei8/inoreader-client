@@ -56,6 +56,27 @@ class InoreaderRequest
     request '/reader/api/0/unread-count?output=json'
   end
 
+  # user subscriptions
+  def user_subscription
+    request '/reader/api/0/subscription/list'
+  end
+
+  def user_tags_folders
+    request '/reader/api/0/tag/list'
+  end
+
+  #Stream contents
+  #@param feed ex.feed/http://~
+  def stream(feed)
+    number = 20
+    order = 'o'
+    xt='user/-/state/com.google/read'
+    output='json'
+    option = {:headers => {'Authorization' => 'GoogleLogin auth=' + @auth_token}}
+    self.class.get("#{INOREADER_BASE_URL}/reader/atom/#{feed}?n=#{number}&o=#{order}&xt=#{xt}&output=#{output}",option).body
+    #?n=#{number}&o=#{order}&xt=#{xt}?output=#{output}",option).body
+  end
+
   private
   def request(path)
     option = {:headers => {'Authorization' => 'GoogleLogin auth=' + @auth_token}}
@@ -114,6 +135,28 @@ class App < Sinatra::Base
     @max = res['max']
     @uc = res['unreadcounts']
     slim :unread
+  end
+
+  get '/user_subscription.json' do
+    json JSON.parse api.user_subscription
+  end
+
+  get '/user_subscription_view' do
+    @subscriptions = JSON.parse(api.user_subscription)['subscriptions']
+    slim :user_subscription
+  end
+
+  get '/user_tags_folders.json' do
+    json JSON.parse api.user_tags_folders
+  end
+
+  get '/user_tags_folders_view' do
+    @tags = JSON.parse(api.user_tags_folders)['tags']
+    slim :user_tags_folders
+  end
+
+  get '/stream' do
+    json JSON.parse api.stream 'feed/http://www.ideaxidea.com/feed'
   end
 
 end

@@ -1,0 +1,26 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+    meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"
+    meta content="width=device-width" name="viewport"
+    title
+      | User Subscriptions
+  body
+    h1 User Subscriptions
+    - @subscriptions.each do |item|
+      .item
+        h4 = item['title']
+        ul
+          li = "id: #{item['id']}"
+          li = "sortid: #{item['sortid']}"
+          li = "firstitemmsec: #{DateTime.strptime(item['firstitemmsec'].to_s[0,10],'%s')}"
+          li = "url: #{item['url']}"
+          li = "htmlUrl: #{item['htmlUrl']}"
+          li = "iconUrl: #{item['iconUrl']}"
+          li
+            | categories
+            ul
+              - item['categories'].each do |category|
+                li = "id: #{category['id']}"
+                li = "label: #{category['label']}"

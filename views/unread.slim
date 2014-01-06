@@ -15,9 +15,7 @@ html
         h4
           = item['id']
         ul
-          li
-            = "unread count: #{item['count']}"
-          li
-            /μsec to sec
-            = DateTime.strptime(item['newestItemTimestampUsec'].to_s[0,10],'%s')
+          li = "unread count: #{item['count']}"
+          /μsec to sec
+          li = DateTime.strptime(item['newestItemTimestampUsec'].to_s[0,10],'%s')
 
