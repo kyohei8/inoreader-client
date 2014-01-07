@@ -7,9 +7,20 @@ require 'httparty'
 
 class InoreaderRequest
   include HTTParty
-  #debug_output $stdout
+  debug_output $stdout
+  InoreaderRequest.disable_rails_query_string_format
 
   INOREADER_BASE_URL = 'https://www.inoreader.com'
+
+  #Special tags
+  TAGS = {
+    read: 'user/-/state/com.google/read',
+    starred: 'user/-/state/com.google/starred',
+    broadcast: 'user/-/state/com.google/broadcast',
+    like: 'user/-/state/com.google/like',
+    tag: 'user/-/label/' # + tag_name
+  }
+
   attr_reader :auth_token
 
   def initialize
@@ -65,22 +76,51 @@ class InoreaderRequest
     request '/reader/api/0/tag/list'
   end
 
+
   #Stream contents
-  #@param feed ex.feed/http://~
-  def stream(feed)
-    number = 20
-    order = 'o'
-    xt='user/-/state/com.google/read'
-    output='json'
-    option = {:headers => {'Authorization' => 'GoogleLogin auth=' + @auth_token}}
-    self.class.get("#{INOREADER_BASE_URL}/reader/atom/#{feed}?n=#{number}&o=#{order}&xt=#{xt}&output=#{output}",option).body
-    #?n=#{number}&o=#{order}&xt=#{xt}?output=#{output}",option).body
+  def stream(param)
+    feed = param[:feed]
+    param.delete :feed
+    request "/reader/atom/#{feed}", param
+  end
+
+  def item_ids(param)
+    feed = param[:feed]
+    param.delete :feed
+    request "/reader/api/0/stream/items/ids/#{feed}", param
+  end
+
+  ## tag ##
+  # rename
+  def rename_tag(source_tag, dest_tag)
+    request '/reader/api/0/rename-tag', {s: source_tag, dest: dest_tag}
+  end
+
+  # delete(disable)
+  def disable_tag(source_tag)
+    request '/reader/api/0/disable-tag', {s: source_tag}
+  end
+
+  # edit
+  def edit_tag(items, add_tag=nil, remove_tag=nil)
+    return 'Please enter tag name!' if add_tag.nil? and remove_tag.nil?
+    q = {}
+    q[:i] = items
+    q[:a] = add_tag unless add_tag.nil?
+    q[:r] = remove_tag unless remove_tag.nil?
+    request '/reader/api/0/edit-tag', q
+  end
+
+  # mark all as read
+  def mark_all_as_read(s: nil)
+    request '/reader/api/0/mark-all-as-read', {s: s}
   end
 
   private
-  def request(path)
+  def request(path, query=nil)
     option = {:headers => {'Authorization' => 'GoogleLogin auth=' + @auth_token}}
-    self.class.get("#{INOREADER_BASE_URL}#{path}",option).body
+    option[:query] = query unless query.nil?
+    self.class.get("#{INOREADER_BASE_URL}#{path}", option).body
   end
 end
 
@@ -98,9 +138,7 @@ class App < Sinatra::Base
   # before filter
   # execute auth
   before /^\/(|user|export)/ do
-    if api.nil?
-      api = InoreaderRequest.new
-    end
+    api ||= InoreaderRequest.new
   end
 
   # root
@@ -125,38 +163,57 @@ class App < Sinatra::Base
   end
 
   # 未読数:json
-  get '/unread.json' do
-    json JSON.parse(api.unread_counters)
+  get '/unread' do
+    json_output api.unread_counters
   end
 
-  # 未読数:View
-  get '/unread_view' do
-    res = JSON.parse(api.unread_counters)
-    @max = res['max']
-    @uc = res['unreadcounts']
-    slim :unread
+  # 登録feed
+  get '/user_subscription' do
+    json_output api.user_subscription
   end
 
-  get '/user_subscription.json' do
-    json JSON.parse api.user_subscription
+  # タグ情報
+  get '/user_tags_folders' do
+    json_output api.user_tags_folders
   end
 
-  get '/user_subscription_view' do
-    @subscriptions = JSON.parse(api.user_subscription)['subscriptions']
-    slim :user_subscription
-  end
-
-  get '/user_tags_folders.json' do
-    json JSON.parse api.user_tags_folders
-  end
-
-  get '/user_tags_folders_view' do
-    @tags = JSON.parse(api.user_tags_folders)['tags']
-    slim :user_tags_folders
-  end
-
+  # feed表示
   get '/stream' do
-    json JSON.parse api.stream 'feed/http://www.ideaxidea.com/feed'
+    json_output api.stream params
+  end
+
+  # id
+  get '/item_ids' do
+    json_output api.item_ids params
+  end
+
+  ## tag ##
+
+  # rename
+  # ex. /rename_tag?s=xxx&dest=xxx
+  get '/rename_tag' do
+    api.rename_tag params[:s], params[:dest]
+  end
+
+  # disable
+  get '/disable_tag' do
+    api.disable_tag params[:s]
+  end
+
+  # edit
+  get '/edit_tag' do
+    api.edit_tag params[:i].split(','), "user/-/label/#{params[:a]}", "user/-/label/#{params[:r]}"
+  end
+
+  # mark all as read
+  get '/mark_all_as_read' do
+    api.mark_all_as_read s: params[:s]
+  end
+
+  private
+  # jsonを読める形でhtmlに出力
+  def json_output(json)
+    "<pre>#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }</pre>"
   end
 
 end
