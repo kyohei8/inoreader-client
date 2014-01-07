@@ -112,8 +112,37 @@ class InoreaderRequest
   end
 
   # mark all as read
-  def mark_all_as_read(s: nil)
-    request '/reader/api/0/mark-all-as-read', {s: s}
+  def mark_all_as_read(feed)
+    request '/reader/api/0/mark-all-as-read', {s: feed}
+  end
+
+  def add_subscription(url)
+    request '/reader/api/0/subscription/quickadd', {quickadd: url}
+  end
+
+  # params:
+  # ac - Action. Can be edit, subscribe, or unsubscribe.
+  # s - Stream id in the form feed/feed_url
+  # t - Subscription title. Omit this parameter to keep the title unchanged
+  # a - Add subscription to folder/tag.
+  # r - Remove subscription from folder/tag.
+  def edit_subscription(ac: 'edit', s: nil, t: nil, a:nil, r:nil)
+    query = {}
+    query[:ac] = ac
+    query[:s] = s unless s.nil?
+    query[:t] = t unless t.nil?
+    query[:a] = a unless a.nil?
+    query[:r] = r unless r.nil?
+    request '/reader/api/0/subscription/edit', query
+  end
+
+  # 購読リストのソート
+  def preferences_list
+    request '/reader/api/0/preference/list'
+  end
+
+  def stream_preferences_list
+    request '/reader/api/0/preference/stream/list'
   end
 
   private
@@ -207,7 +236,31 @@ class App < Sinatra::Base
 
   # mark all as read
   get '/mark_all_as_read' do
-    api.mark_all_as_read s: params[:s]
+    api.mark_all_as_read params[:s]
+  end
+
+  # add subscription
+  get '/add_subscription' do
+    json_output api.add_subscription params[:url]
+  end
+
+  # edit subscription
+  # /edit_subscription?ac=edit&s=feed/http://blog.lofei.info/atom.xml&t=lofei_blog
+  get '/edit_subscription' do
+    api.edit_subscription params
+  end
+
+  #
+  get '/preferences_list' do
+    json_output api.preferences_list
+  end
+
+  get '/stream_preferences_list' do
+    json_output api.stream_preferences_list
+  end
+
+  get '' do
+
   end
 
   private
