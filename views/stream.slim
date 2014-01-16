@@ -46,7 +46,10 @@ form#stream action="/stream" method="get"
         | continuation
         input#stream-continuation name="c" type="text" value=""
     li
-      label name="stream-output"
+      span
         | output format
-        input#stream-output name="output" type="text" value="json"
+        label
+          input name="output" type="radio" value="json" checked="" JSON
+        label
+          input name="output" type="radio" value="XML" XML
   input type="submit" value="Go!"

@@ -206,7 +206,7 @@ module InoreaderApi
       # stream
       #  output format => reader/api/0/stream/contents -> json, reader/atom -> XML or specified output
       # @param [String] token auth token
-      # @param [String] feed
+      # @param [String] feed id of subscription
       # @param [Hash] params request Parameters
       # @option params [Number] :n Number of items. (default 20, max 1000)
       # @option params [String] :r Order. (default: newest first. o: oldest first)
@@ -219,8 +219,7 @@ module InoreaderApi
         # TODO feed
         query = {:query => params.merge!(:T => token)}
         p query
-        feed_name = ''
-        feed_name = '/feed/' + feed unless feed.empty?
+        feed_name = feed.empty? ? '' : '/' + feed
         ApiHelper.request "/reader/atom#{feed_name}", query
       end
 
@@ -284,9 +283,8 @@ class App < Sinatra::Base
     unless session[:auth_token].nil?
       @feeds = []
       JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token] )['subscriptions'].each do |subscription|
-        @feeds << {:id => subscription['htmlUrl'], :label => subscription['title'] }
+        @feeds << {:id => subscription['id'], :label => subscription['title'] }
       end
-
     end
     slim :index
   end
@@ -342,7 +340,11 @@ class App < Sinatra::Base
     query[:output] = params[:output] unless params[:output].empty?
     p query
     feed = params[:feed]
-    json_output InoreaderApi::Api.stream session[:auth_token], feed, query
+    if params[:output] == 'json'
+      json_output InoreaderApi::Api.stream session[:auth_token], feed, query
+    else
+      output InoreaderApi::Api.stream session[:auth_token], feed, query
+    end
   end
 
 =begin
@@ -403,5 +405,9 @@ class App < Sinatra::Base
   # jsonを読める形でhtmlに出力
   def json_output(json)
     "<pre>#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }</pre>"
+  end
+
+  def output(data)
+    "<pre>#{Rack::Utils.escape_html data }</pre>"
   end
 end
