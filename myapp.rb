@@ -216,11 +216,26 @@ module InoreaderApi
       # @option params [String] :c Continuation.
       # @option params [String] :output output format ('json', 'xml', ...)
       def stream(token, feed='', params={})
-        # TODO feed
         query = {:query => params.merge!(:T => token)}
-        p query
         feed_name = feed.empty? ? '' : '/' + feed
         ApiHelper.request "/reader/atom#{feed_name}", query
+      end
+
+      # item ids
+      # @param [String] token auth token
+      # @param [String] feed id of subscription
+      # @param [Hash] params request Parameters
+      # @option params [Number] :n Number of items. (default 20, max 1000)
+      # @option params [String] :r Order. (default: newest first. o: oldest first)
+      # @option params [String] :ot Start time (unix timestamp. ex.1389756192)
+      # @option params [String] :xt Exclude Target. (ex. 'user/-/state/com.google/read')
+      # @option params [String] :it Include Target. ('user/-/state/com.google/read(,starred,like)')
+      # @option params [String] :c Continuation.
+      # @option params [String] :output output format ('json', 'xml', ...)
+      def item_ids(token, feed='', params={})
+        query = {:query => params.merge!(:T => token)}
+        feed_name = feed.empty? ? '' : '/' + feed
+        ApiHelper.request "/reader/api/0/stream/items/ids#{feed_name}", query
       end
 
     end
@@ -328,17 +343,11 @@ class App < Sinatra::Base
     json_output InoreaderApi::Api.user_tags_folders session[:auth_token]
   end
 
+
+
   # feed表示
   get '/stream' do
-    query = {}
-    query[:n] = params[:n] unless params[:n].empty?
-    query[:r] = params[:r] unless params[:r].empty?
-    query[:ot] = params[:ot] unless params[:ot].empty?
-    query[:xt] = params[:xt] unless params[:xt].empty?
-    query[:it] = params[:it] unless params[:it].empty?
-    query[:c] = params[:c] unless params[:c].empty?
-    query[:output] = params[:output] unless params[:output].empty?
-    p query
+    query = create_stream_query
     feed = params[:feed]
     if params[:output] == 'json'
       json_output InoreaderApi::Api.stream session[:auth_token], feed, query
@@ -347,12 +356,18 @@ class App < Sinatra::Base
     end
   end
 
-=begin
   # id
   get '/item_ids' do
-    json_output api.item_ids params
+    query = create_stream_query
+    feed = params[:feed]
+    if params[:output] == 'json'
+      json_output InoreaderApi::Api.item_ids session[:auth_token], feed, query
+    else
+      output InoreaderApi::Api.item_ids session[:auth_token], feed, query
+    end
   end
 
+=begin
   ## tag ##
 
   # rename
@@ -409,5 +424,18 @@ class App < Sinatra::Base
 
   def output(data)
     "<pre>#{Rack::Utils.escape_html data }</pre>"
+  end
+
+
+  def create_stream_query
+    query = {}
+    query[:n] = params[:n] unless params[:n].empty?
+    query[:r] = params[:r] unless params[:r].empty?
+    query[:ot] = params[:ot] unless params[:ot].empty?
+    query[:xt] = params[:xt] unless params[:xt].empty?
+    query[:it] = params[:it] unless params[:it].empty?
+    query[:c] = params[:c] unless params[:c].empty?
+    query[:output] = params[:output] unless params[:output].empty?
+    query
   end
 end
