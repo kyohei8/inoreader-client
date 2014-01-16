@@ -1,0 +1,52 @@
+form#stream action="/stream" method="get"
+  ul
+    li
+      label name="stream-feed"
+        | feed
+        select#stream-feed value="" name="feed"
+          option value=""
+          - for feed in @feeds
+            option value=feed[:id] = feed[:label]
+
+    li
+      label name="stream-n"
+        | number of items
+        input#stream-n name="n" type="number" value="20" min="1" max="1000"
+    li
+      label name="stream-r"
+        | order
+        select#stream-r name="r" value=""
+          option value="" newest
+          option value="o" oldest
+    li
+      label name="stream-ot"
+        | start time
+        input#stream-ot name="ot" type="datetime" value=""
+    li
+      span
+        | exclude Target
+      label name="stream-xt"
+        label
+          input name="xt" type="radio" value="" checked="" all
+        label
+          input name="xt" type="radio" value="user/-/state/com.google/read" unread only
+    li
+      span
+        | include Target
+        label
+          input name="it" type="radio" value="" checked="" all
+        label
+          input name="it" type="radio" value="user/-/state/com.google/read" read
+        label
+          input name="it" type="radio" value="user/-/state/com.google/starred" starred
+        label
+          input name="it" type="radio" value="user/-/state/com.google/like" like
+    li
+      label name="stream-continuation"
+        | continuation
+        input#stream-continuation name="c" type="text" value=""
+    li
+      label name="stream-output"
+        | output format
+        input#stream-output name="output" type="text" value="json"
+  input type="submit" value="Go!"

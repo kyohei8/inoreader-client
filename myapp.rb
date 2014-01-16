@@ -1,13 +1,14 @@
 require 'sinatra/base'
 require 'sinatra/reloader' #if development?
+require 'sinatra/partial'
 require 'sinatra/json'
 require 'slim'
 require 'httparty'
-
+#require './inoreader_api.rb'
 
 class InoreaderRequest
   include HTTParty
-  debug_output $stdout
+  #debug_output $stdout
   InoreaderRequest.disable_rails_query_string_format
 
   INOREADER_BASE_URL = 'https://www.inoreader.com'
@@ -126,7 +127,7 @@ class InoreaderRequest
   # t - Subscription title. Omit this parameter to keep the title unchanged
   # a - Add subscription to folder/tag.
   # r - Remove subscription from folder/tag.
-  def edit_subscription(ac: 'edit', s: nil, t: nil, a:nil, r:nil)
+  def edit_subscription(ac: 'edit', s: nil, t: nil, a: nil, r: nil)
     query = {}
     query[:ac] = ac
     query[:s] = s unless s.nil?
@@ -153,64 +154,198 @@ class InoreaderRequest
   end
 end
 
+
+module InoreaderApi
+  class Api
+    class << self
+      # 認証し、sessionにauthKeyを保持する
+      # @param un ユーザ名/Email
+      # @param pw パスワード
+      # @return 認証に成功した場合はauthKey, 失敗した場合はnil
+      # TODO 500, 404チェック
+      def auth(un, pw)
+        response_body = ApiHelper.auth_request '/accounts/ClientLogin', un, pw
+        if response_body.nil? or response_body.start_with?('Error')
+          #raise response.body.split('=')[1]
+          p response_body
+          nil
+        else
+          Hash[*response_body.split.collect { |i| i.split('=') }.flatten]['Auth']
+        end
+      end
+
+      # get user info
+      def user_info(token)
+        ApiHelper.request_with_token '/reader/api/0/user-info', token
+      end
+
+      # get token
+      def token(token)
+        ApiHelper.request '/reader/api/0/token', {:query => {:T => token}}
+      end
+
+      # OPML Import
+      def import
+        # todo
+      end
+
+      # get unread counters
+      def unread_counters(token)
+        ApiHelper.request '/reader/api/0/unread-count?output=json', {:query => {:T => token}}
+      end
+
+      # user subscriptions
+      def user_subscription(token)
+        ApiHelper.request '/reader/api/0/subscription/list', {:query => {:T => token}}
+      end
+
+      def user_tags_folders(token)
+        ApiHelper.request '/reader/api/0/tag/list', {:query => {:T => token}}
+      end
+
+      # stream
+      #  output format => reader/api/0/stream/contents -> json, reader/atom -> XML or specified output
+      # @param [String] token auth token
+      # @param [String] feed
+      # @param [Hash] params request Parameters
+      # @option params [Number] :n Number of items. (default 20, max 1000)
+      # @option params [String] :r Order. (default: newest first. o: oldest first)
+      # @option params [String] :ot Start time (unix timestamp. ex.1389756192)
+      # @option params [String] :xt Exclude Target. (ex. 'user/-/state/com.google/read')
+      # @option params [String] :it Include Target. ('user/-/state/com.google/read(,starred,like)')
+      # @option params [String] :c Continuation.
+      # @option params [String] :output output format ('json', 'xml', ...)
+      def stream(token, feed='', params={})
+        # TODO feed
+        query = {:query => params.merge!(:T => token)}
+        p query
+        feed_name = ''
+        feed_name = '/feed/' + feed unless feed.empty?
+        ApiHelper.request "/reader/atom#{feed_name}", query
+      end
+
+    end
+  end
+
+  class ApiHelper
+    debug = false
+    include HTTParty
+    if debug
+      debug_output $stdout
+    end
+    #InoreaderApi::Api.disable_rails_query_string_format
+    self.disable_rails_query_string_format
+
+    INOREADER_BASE_URL = 'https://www.inoreader.com'
+
+    # Inoreaderへのリクエストクラス
+    # リクエストしてbodyを返す
+    class << self
+
+      # 普通のRequest
+      # @param path
+      # @param query URLパラメータ  ex. {:query => {:q => 'foo', :ref => 'bar'}}
+      # @param method
+      # @return response body
+      def request(path, query=nil, method=:get)
+        self.send(method, "#{INOREADER_BASE_URL}#{path}", query).body
+      end
+
+      #ヘッダーにGoogleLogin authのトークンを付けてリクエストする
+      def request_with_token(path, token, query=nil, method=:get)
+        raise 'Error: not authorized' if token.nil?
+        option = {:headers => {'Authorization' => 'GoogleLogin auth=' + token}}
+        option[:query] = query unless query.nil?
+        self.send(method, "#{INOREADER_BASE_URL}#{path}", option).body
+      end
+
+      # Inoreaderへの認証リクエスト
+      def auth_request(path, un, pw)
+        post("#{INOREADER_BASE_URL}#{path}", {:body => {:Email => un, :Passwd => pw}}).body
+      end
+    end
+  end
+end
+
+
 # Sinatra app
 class App < Sinatra::Base
   enable :sessions
   set :session_secret, 'f93f!ep2_3g'
-
+  register Sinatra::Partial
   configure :development do
     register Sinatra::Reloader
   end
 
-  api = nil
-
-  # before filter
-  # execute auth
-  before /^\/(|user|export)/ do
-    api ||= InoreaderRequest.new
-  end
+  set :partial_template_engine, :slim
 
   # root
-  # 認証を行う
   get '/' do
-    "auth key: #{api.auth_token}"
+    unless session[:auth_token].nil?
+      @feeds = []
+      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token] )['subscriptions'].each do |subscription|
+        @feeds << {:id => subscription['htmlUrl'], :label => subscription['title'] }
+      end
+
+    end
+    slim :index
+  end
+
+  # 認証を行う
+  post '/auth' do
+    session[:auth_token] = InoreaderApi::Api.auth(params['un'], params['pw'])
+    if session[:auth_token].nil?
+      'login failed!'
+    else
+      redirect to('/')
+    end
   end
 
   # ユーザ情報を表示
   get '/user' do
-    api.user_info
+    json_output InoreaderApi::Api.user_info session[:auth_token]
   end
 
   #トークンを取得
   get '/token' do
-    api.token
+    InoreaderApi::Api.token session[:auth_token]
   end
 
-  #エクスポート
-  get '/export.xml' do
-    api.export
+  get '/import' do
+    # TODO
   end
 
   # 未読数:json
   get '/unread' do
-    json_output api.unread_counters
+    json_output InoreaderApi::Api.unread_counters session[:auth_token]
   end
 
   # 登録feed
   get '/user_subscription' do
-    json_output api.user_subscription
+    json_output InoreaderApi::Api.user_subscription session[:auth_token]
   end
 
   # タグ情報
   get '/user_tags_folders' do
-    json_output api.user_tags_folders
+    json_output InoreaderApi::Api.user_tags_folders session[:auth_token]
   end
 
   # feed表示
   get '/stream' do
-    json_output api.stream params
+    query = {}
+    query[:n] = params[:n] unless params[:n].empty?
+    query[:r] = params[:r] unless params[:r].empty?
+    query[:ot] = params[:ot] unless params[:ot].empty?
+    query[:xt] = params[:xt] unless params[:xt].empty?
+    query[:it] = params[:it] unless params[:it].empty?
+    query[:c] = params[:c] unless params[:c].empty?
+    query[:output] = params[:output] unless params[:output].empty?
+    p query
+    feed = params[:feed]
+    json_output InoreaderApi::Api.stream session[:auth_token], feed, query
   end
 
+=begin
   # id
   get '/item_ids' do
     json_output api.item_ids params
@@ -263,10 +398,10 @@ class App < Sinatra::Base
 
   end
 
+=end
   private
   # jsonを読める形でhtmlに出力
   def json_output(json)
     "<pre>#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }</pre>"
   end
-
 end

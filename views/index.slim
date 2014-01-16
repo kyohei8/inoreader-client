@@ -1,0 +1,55 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+    meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"
+    meta content="width=device-width" name="viewport"
+    title
+      | InoReader API App
+    link href="/css/main.css" rel="stylesheet"
+    script src=""
+  body
+    h1 Welcome to InoReader API App
+
+    a href="http://wiki.inoreader.com/doku.php?id=api#user_info" ref
+
+    - if session[:auth_token].nil?
+      p enter your inoreaer username(or Email)/password.
+      form action="/auth" method="post"
+        label
+          | username
+          input#username type='text' name="un" value=""
+        label
+          | password
+          input type="password" name="pw"
+        input type="submit"
+        p
+          span style="color:red" = @message
+    - else
+      p ="logined. (your authToken:#{session[:auth_token]})"
+      p style="font-size:small; color:#999"
+        | note: authToken has been stored in the session. If you close the browser, then it will be clear.
+
+      ul.links
+        li
+          a href="/user" user info
+        li
+          a href="/token" check token
+        li
+          a href="https://www.inoreader.com/reader/subscriptions/export?download=1&T=#{session[:auth_token]}" target="_blank" Export (download OPML file)
+        /li
+          | Import
+          .import-form
+            label
+              | feed URL
+              input type="text" size=100
+            input type="submit" value="add"
+        li
+          a href="/unread" unread counters
+        li
+          a href="/user_subscription" user subscriptions
+        li
+          a href="/user_tags_folders" user tags and folders
+        li
+          | Stream
+          == partial 'stream'
