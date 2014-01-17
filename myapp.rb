@@ -156,6 +156,10 @@ end
 
 
 module InoreaderApi
+
+  class InoreaderApiError < StandardError;
+  end
+
   class Api
     class << self
       # 認証し、sessionにauthKeyを保持する
@@ -263,6 +267,8 @@ module InoreaderApi
       # @return response body
       def request(path, query=nil, method=:get)
         self.send(method, "#{INOREADER_BASE_URL}#{path}", query).body
+      rescue => e
+        raise InoreaderApiError.new "Network Error:#{e.message}"
       end
 
       #ヘッダーにGoogleLogin authのトークンを付けてリクエストする
@@ -271,11 +277,16 @@ module InoreaderApi
         option = {:headers => {'Authorization' => 'GoogleLogin auth=' + token}}
         option[:query] = query unless query.nil?
         self.send(method, "#{INOREADER_BASE_URL}#{path}", option).body
+      rescue => e
+        raise InoreaderApiError.new "Network Error:#{e.message}"
       end
 
       # Inoreaderへの認証リクエスト
       def auth_request(path, un, pw)
-        post("#{INOREADER_BASE_URL}#{path}", {:body => {:Email => un, :Passwd => pw}}).body
+        response = post("#{INOREADER_BASE_URL}#{path}", {:body => {:Email => un, :Passwd => pw}})
+        response.body
+      rescue => e
+        raise InoreaderApiError.new "Network Error:#{e.message}"
       end
     end
   end
@@ -286,19 +297,19 @@ end
 class App < Sinatra::Base
   enable :sessions
   set :session_secret, 'f93f!ep2_3g'
-  register Sinatra::Partial
   configure :development do
     register Sinatra::Reloader
   end
 
+  register Sinatra::Partial
   set :partial_template_engine, :slim
 
   # root
   get '/' do
     unless session[:auth_token].nil?
       @feeds = []
-      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token] )['subscriptions'].each do |subscription|
-        @feeds << {:id => subscription['id'], :label => subscription['title'] }
+      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
+        @feeds << {:id => subscription['id'], :label => subscription['title']}
       end
     end
     slim :index
@@ -342,7 +353,6 @@ class App < Sinatra::Base
   get '/user_tags_folders' do
     json_output InoreaderApi::Api.user_tags_folders session[:auth_token]
   end
-
 
 
   # feed表示
@@ -416,6 +426,16 @@ class App < Sinatra::Base
   end
 
 =end
+
+  not_found do
+    slim :'404'
+  end
+
+  error do
+    @e = env['sinatra.error'].message
+    slim :'500'
+  end
+
   private
   # jsonを読める形でhtmlに出力
   def json_output(json)
@@ -425,7 +445,6 @@ class App < Sinatra::Base
   def output(data)
     "<pre>#{Rack::Utils.escape_html data }</pre>"
   end
-
 
   def create_stream_query
     query = {}
@@ -438,4 +457,5 @@ class App < Sinatra::Base
     query[:output] = params[:output] unless params[:output].empty?
     query
   end
+
 end
