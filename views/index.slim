@@ -34,6 +34,8 @@ html
         li
           a href="/user" user info
         li
+          a href="/user_id" user id
+        li
           a href="/token" check token
         li
           a href="https://www.inoreader.com/reader/subscriptions/export?download=1&T=#{session[:auth_token]}" target="_blank" Export (download OPML file)
@@ -52,4 +54,26 @@ html
           a href="/user_tags_folders" user tags and folders
         li
           | Stream / item_ids
-          == partial 'stream'
+          == partial :stream
+        li
+          | tag
+          == partial :tag
+        li
+          | tag
+          == partial :markRead
+        li
+          | add subscription
+          form action="/add_subscription" method="get"
+            input type="text" name="quickadd" placeholder="http://..." size=50
+            input type="submit" value="add"
+        li
+          | edit subscription
+          == partial :editSubscription
+        li
+          a href="/preferences_list" preferences list
+        li
+          a href="/stream_preferences_list" stream preferences list
+
+        li
+          | Set stream preferences
+          == partial :setStreamPref

@@ -1,0 +1,32 @@
+form action="/edit_subscription" method="post"
+  label
+    | feed
+    select value="" name="s"
+      - for feed in @feeds
+        option value=feed[:id] = feed[:label]
+    label
+      | new feed url
+      input type="text" name="feed" size=50
+
+  ul
+    li
+      label
+        input name="type" type="radio" value="e" checked="" edit
+      label
+        input name="type" type="radio" value="u" unsubscribe
+      label
+        input name="type" type="radio" value="s" subscribe
+    li
+      label
+        | new title
+        input type="text" name="t" size=50
+    li
+      label
+        | add tag/folder
+        input type="text" name="a" size=50
+    li
+      label
+        | remove tag/folder
+        input type="text" name="r" size=50
+
+  input type="submit" value="edit"

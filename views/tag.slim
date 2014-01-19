@@ -1,0 +1,30 @@
+form action="/rename_tag" method="get"
+  span rename tag
+  input type="text" name="s" placeholder="source tag" value=""
+  span ->
+  input type="text" name="dest" placeholder="dest tag" value=""
+
+  input type="submit" value="rename"
+
+form action="/disable_tag" method="get"
+  span delete tag
+  input type="text" name="s" placeholder="source tag" value=""
+  input type="submit" value="delete"
+
+form action="/edit_tag" method="get"
+  span edit tag
+  label
+    input name="type" type="radio" value="a" checked="" add
+  label
+    input name="type" type="radio" value="r" remove
+  label name="edit-tag-item"
+    | item ids(separator ' ')
+    input#edit-tag-item type="text" name="ids" placeholder="tag:google.com,2005:reader/item/000000005bbc9da3" size=50 value=""
+  label
+    | tag
+    select name="tagname"
+      - @tags.each do |k,v|
+        option value="#{v}" =k
+    input name="ctagname" type="text" value=""
+
+  input type="submit" value="edit"

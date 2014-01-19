@@ -1,0 +1,8 @@
+form action="/mark_all_as_read"
+  label
+    | stream
+    input type="text" name="s" placeholder="feed, label, tag..."
+  label
+    | mark as read older than
+    input type="text" name="ts" placeholder="2014/01/19 12:42"
+  input type="submit" value="mark all as read"
