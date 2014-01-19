@@ -3,12 +3,65 @@ html
   head
     meta charset="utf-8"
     meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"
-    meta content="width=device-width" name="viewport"
+    meta name="viewport" content="width=device-width, initial-scale=1.0"
     title
       | InoReader API App
-    link href="/css/main.css" rel="stylesheet"
-    script src=""
+    == css :bootstrap
+    == js :app
   body
+    nav.navbar.navbar-default role="navigation"
+      .navbar-header
+        button.navbar-toggle data-target="#bs-example-navbar-collapse-1" data-toggle="collapse" type="button"
+          span.sr-only Toggle navigation
+          span.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand href="#" Title
+      #bs-example-navbar-collapse-1.collapse.navbar-collapse
+        ul.nav.navbar-nav
+          li.active
+            a href="#" Link
+          li
+            a href="#" Link
+          li.dropdown
+            a.dropdown-toggle data-toggle="dropdown" href="#"
+              | Dropdown
+              b.caret
+            ul.dropdown-menu
+              li
+                a href="#" Link
+              li
+                a href="#" Link
+              li
+                a href="#" Link
+              li.divider
+              li
+                a href="#" Link
+              li.divider
+              li
+                a href="#" Link
+        form.navbar-form.navbar-left role="search"
+          .form-group
+            input.form-control placeholder="Search" type="text"
+          button.btn.btn-default type="submit"
+        ul.nav.navbar-nav.navbar-right
+          li
+            a href="#" Link
+          li.dropdown
+            a.dropdown-toggle data-toggle="dropdown" href="#"
+              | Dropdown
+              b.caret
+            ul.dropdown-menu
+              li
+                a href="#" Link
+              li
+                a href="#" Link
+              li
+                a href="#" Link
+              li.divider
+              li
+                a href="#" Link
+
     h1 Welcome to InoReader API App
 
     a href="http://wiki.inoreader.com/doku.php?id=api#user_info" ref

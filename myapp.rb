@@ -1,21 +1,38 @@
 require 'sinatra/base'
 require 'sinatra/reloader' #if development?
 require 'sinatra/partial'
+require 'sinatra/assetpack'
 require 'sinatra/json'
 require 'slim'
 require './inoreader_api.rb'
 require './util.rb'
+require 'less'
 
 # Sinatra app
 class App < Sinatra::Base
   enable :sessions
   set :session_secret, 'f93f!ep2_3g'
+  set :public_folder, File.dirname(__FILE__) + '/assets'
   configure :development do
     register Sinatra::Reloader
   end
 
   register Sinatra::Partial
   set :partial_template_engine, :slim
+
+  # setup assetpack
+  set :root, File.dirname(__FILE__)
+  register Sinatra::AssetPack
+
+  Less.paths << "#{App.root}/app/css/less"
+
+  assets do
+    serve '/css', from: 'app/css'
+    serve '/js', from: 'app/js'
+    css :bootstrap, %w(/css/bootstrap.css)
+    js :app, '/js/app.js', ['/js/jquery-2.0.3.min.js', '/js/bootstrap.min.js']
+    css_compression :less
+  end
 
 
   class SpecialTags
@@ -28,6 +45,10 @@ class App < Sinatra::Base
         :link => 'user/1005880641/state/com.google/like',
         :custom => 'user/1005880641/label/'
     }.freeze
+  end
+
+  assets do
+
   end
 
   # root
