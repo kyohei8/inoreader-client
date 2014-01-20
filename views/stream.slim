@@ -1,62 +1,86 @@
 // TODO jsで切り替える
-p
-  | request method
-  label
-    input name="output" type="radio" value="stream" checked="" stream
-  label
-    input name="output" type="radio" value="stream" item ids
-form#stream action="/stream" method="get"
-  ul
-    li
-      label name="stream-feed"
-        | feed
-        select#stream-feed value="" name="feed"
-          option value=""
-          - for feed in @feeds
-            option value=feed[:id] = feed[:label]
-
-    li
-      label name="stream-n"
-        | number of items
-        input#stream-n name="n" type="number" value="20" min="1" max="1000"
-    li
-      label name="stream-r"
-        | order
-        select#stream-r name="r" value=""
-          option value="" newest
-          option value="o" oldest
-    li
-      label name="stream-ot"
-        | start time
-        input#stream-ot name="ot" type="datetime" value=""
-    li
-      span
-        | exclude Target
-      label name="stream-xt"
-        label
-          input name="xt" type="radio" value="" checked="" all
-        label
-          input name="xt" type="radio" value="user/-/state/com.google/read" unread only
-    li
-      span
-        | include Target
-        label
-          input name="it" type="radio" value="" checked="" all
-        label
-          input name="it" type="radio" value="user/-/state/com.google/read" read
-        label
-          input name="it" type="radio" value="user/-/state/com.google/starred" starred
-        label
-          input name="it" type="radio" value="user/-/state/com.google/like" like
-    li
-      label name="stream-continuation"
-        | continuation
-        input#stream-continuation name="c" type="text" value=""
-    li
-      span
-        | output format
-        label
-          input name="output" type="radio" value="json" checked="" JSON
-        label
-          input name="output" type="radio" value="XML" XML
-  input type="submit" value="Go!"
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal role="form" action="/stream" method="post"
+        fieldset
+          legend Stream / item ids
+          .form-group
+            label.col-lg-2.control-label Request method
+            .col-lg-10
+              .radio
+                label
+                  input name="type" type="radio" value="stream" checked="" stream
+              .radio
+                label
+                  input name="type" type="radio" value="stream" item ids
+          .form-group
+            label.col-lg-2.control-label feed
+            .col-lg-10
+              select.form-control value="" name="feed"
+                option value=""
+                - for feed in @feeds
+                  option value=feed[:id] = feed[:label]
+          .form-group
+            label.col-lg-2.control-label for="numberOfItems" number of items
+            .col-lg-10
+              input#numberOfItems.form-control name="n" type="number" value="20" min="1" max="1000"
+          .form-group
+            label.col-lg-2.control-label order
+            .col-lg-2
+              .radio
+                label
+                  input name="r" type="radio" value="" checked="" newest
+            .col-lg-2
+              .radio
+                label
+                  input name="r" type="radio" value="o" oldest
+          .form-group
+            label.col-lg-2.control-label for="ot" start time
+            .col-lg-10
+              input#ot.form-control name="ot" type="datetime" value=""
+          .form-group
+            label.col-lg-2.control-label exclude Target
+            .col-lg-2
+              .radio
+                label
+                  input name="xt" type="radio" value="" checked="" all
+            .col-lg-2
+              .radio
+                label
+                  input name="xt" type="radio" value="user/-/state/com.google/read" unread only
+          .form-group
+            label.col-lg-2.control-label include Target
+            .col-lg-2
+              .radio
+                label
+                  input name="it" type="radio" value="" checked="" all
+            .col-lg-2
+              .radio
+                label
+                  input name="it" type="radio" value="user/-/state/com.google/read" read
+            .col-lg-2
+              .radio
+                label
+                  input name="it" type="radio" value="user/-/state/com.google/starred" starred
+            .col-lg-2
+              .radio
+                label
+                  input name="it" type="radio" value="user/-/state/com.google/like" like
+          .form-group
+            label.col-lg-2.control-label for="continuation" continuation
+            .col-lg-10
+              input#continuation.form-control name="c" type="text" value=""
+          .form-group
+            label.col-lg-2.control-label output format
+            .col-lg-2
+              .radio
+                label
+                  input name="output" type="radio" value="json" checked="" JSON
+            .col-lg-2
+              .radio
+                label
+                  input name="output" type="radio" value="XML" XML
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" Submit
