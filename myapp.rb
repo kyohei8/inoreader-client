@@ -6,7 +6,6 @@ require 'sinatra/json'
 require 'slim'
 require './inoreader_api.rb'
 require './util.rb'
-require 'less'
 
 # Sinatra app
 class App < Sinatra::Base
@@ -24,14 +23,11 @@ class App < Sinatra::Base
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
 
-  Less.paths << "#{App.root}/app/css/less"
-
   assets do
     serve '/css', from: 'app/css'
     serve '/js', from: 'app/js'
     css :bootstrap, %w(/css/bootstrap.css)
     js :app, '/js/app.js', ['/js/jquery-2.0.3.min.js', '/js/bootstrap.min.js']
-    css_compression :less
   end
 
 
@@ -47,20 +43,8 @@ class App < Sinatra::Base
     }.freeze
   end
 
-  assets do
-
-  end
-
   # root
   get '/' do
-    unless session[:auth_token].nil?
-      @feeds = []
-      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
-        @feeds << {:id => subscription['id'], :label => subscription['title']}
-      end
-    end
-
-    @tags = SpecialTags::TAGS
     slim :index
   end
 
@@ -86,7 +70,7 @@ class App < Sinatra::Base
 
   #トークンを取得
   get '/token' do
-    InoreaderApi::Api.token session[:auth_token]
+    output InoreaderApi::Api.token session[:auth_token]
   end
 
   get '/import' do
@@ -108,8 +92,18 @@ class App < Sinatra::Base
     json_output InoreaderApi::Api.user_tags_folders session[:auth_token]
   end
 
-  # feed表示
   get '/stream' do
+    unless session[:auth_token].nil?
+      @feeds = []
+      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
+        @feeds << {:id => subscription['id'], :label => subscription['title']}
+      end
+    end
+    slim :stream
+  end
+
+  # feed表示
+  post '/stream' do
     query = create_stream_query
     feed = params[:feed]
     if params[:output] == 'json'
@@ -131,19 +125,23 @@ class App < Sinatra::Base
   end
 
   ## tag ##
+  get '/tag' do
+    @tags = SpecialTags::TAGS
+    slim :tag
+  end
 
   # rename
-  get '/rename_tag' do
+  post '/rename_tag' do
     InoreaderApi::Api.rename_tag session[:auth_token], params[:s], params[:dest]
   end
 
   # disable
-  get '/disable_tag' do
+  post '/disable_tag' do
     InoreaderApi::Api.disable_tag session[:auth_token], params[:s]
   end
 
   # edit
-  get '/edit_tag' do
+  post '/edit_tag' do
     ids = params[:ids].split(' ')
     tag_name = params[:tagname]
     if tag_name == SpecialTags::TAGS[:custom]
@@ -154,15 +152,29 @@ class App < Sinatra::Base
   end
 
   # mark all as read
+  get '/mark_all_as_read' do
+    slim :markRead
+  end
+
   # 一度mark all as readすると、unread状態に戻せない仕様っぽい
   # tsより古いarticleを削除する
-  get '/mark_all_as_read' do
+  post '/mark_all_as_read' do
     ts = Util.time_to_microsecond(Time.parse(params[:ts]))
     InoreaderApi::Api.mark_all_as_read session[:auth_token], ts, params[:s]
   end
 
+  get '/subscription' do
+    unless session[:auth_token].nil?
+      @feeds = []
+      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
+        @feeds << {:id => subscription['id'], :label => subscription['title']}
+      end
+    end
+    slim :subscription
+  end
+
   # add subscription
-  get '/add_subscription' do
+  post '/add_subscription' do
     json_output InoreaderApi::Api.add_subscription session[:auth_token], params[:quickadd]
   end
 
@@ -196,6 +208,10 @@ class App < Sinatra::Base
     json_output InoreaderApi::Api.stream_preferences_list session[:auth_token]
   end
 
+  get '/set_subscription_ordering' do
+    slim :setStreamPref
+  end
+
   post '/set_subscription_ordering' do
     InoreaderApi::Api.set_subscription_ordering session[:auth_token], params[:s], params[:v]
   end
@@ -215,13 +231,15 @@ class App < Sinatra::Base
 
   #jsonを読める形でhtmlに出力
   def json_output(json)
-    "<pre>#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }</pre>"
+    @output = "#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }"
+    slim :renderText
   end
 
   #json以外を読める形でhtmlに出力
   # @param data
   def output(data)
-    "<pre>#{Rack::Utils.escape_html data }</pre>"
+    @output = "#{Rack::Utils.escape_html data }"
+    slim :renderText
   end
 
   def create_stream_query
