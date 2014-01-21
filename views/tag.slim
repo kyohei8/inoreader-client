@@ -1,30 +1,78 @@
-form action="/rename_tag" method="get"
-  span rename tag
-  input type="text" name="s" placeholder="source tag" value=""
-  span ->
-  input type="text" name="dest" placeholder="dest tag" value=""
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal action="/rename_tag" method="post"
+        fieldset
+          legend Rename tag
+          .form-group
+            label.col-lg-2.control-label source tag
+            .col-lg-10
+              input.form-control type="text" name="s" placeholder="tag name" value=""
+          .form-group
+            label.col-lg-2.control-label dest tag
+            .col-lg-10
+              input.form-control type="text" name="dest" placeholder="tag name" value=""
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" rename
 
-  input type="submit" value="rename"
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal action="/disable_tag" method="post"
+        fieldset
+          legend Delete tag
+          .form-group
+            label.col-lg-2.control-label source tag
+            .col-lg-10
+              input.form-control type="text" name="s" placeholder="tag name" value=""
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" delete
 
-form action="/disable_tag" method="get"
-  span delete tag
-  input type="text" name="s" placeholder="source tag" value=""
-  input type="submit" value="delete"
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal action="/edit_tag" method="post"
+        fieldset
+          legend Edit tag
+          .form-group
+            label.col-lg-2.control-label type
+            .col-lg-10
+              .radio
+                label
+                  input name="type" type="radio" value="a" checked="" add
+              .radio
+                label
+                  input name="type" type="radio" value="r" remove
+          .form-group
+            label.col-lg-2.control-label for="edit-tag-item" item ids(separator ' ')
+            .col-lg-10
+              input#edit-tag-item.form-control type="text" name="ids" placeholder="tag:google.com,2005:reader/item/000000005bbc9da3" size=50 value=""
+          .form-group
+            label.col-lg-2.control-label tag
+            .col-lg-10
+              select#edit-tag-type.form-control value="" name="tagname"
+                - @tags.each do |tag|
+                  option value="#{tag[:value]}" =tag[:label]
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              input#edit-tag-label.form-control name="labelname" placeholder="enter label name" type="text" value=""
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary edit
+javascript:
 
-form action="/edit_tag" method="get"
-  span edit tag
-  label
-    input name="type" type="radio" value="a" checked="" add
-  label
-    input name="type" type="radio" value="r" remove
-  label name="edit-tag-item"
-    | item ids(separator ' ')
-    input#edit-tag-item type="text" name="ids" placeholder="tag:google.com,2005:reader/item/000000005bbc9da3" size=50 value=""
-  label
-    | tag
-    select name="tagname"
-      - @tags.each do |k,v|
-        option value="#{v}" =k
-    input name="ctagname" type="text" value=""
+  var toggleLabel = function(){
+    var selected = $('#edit-tag-type').find(':selected').text();
+    if(selected === 'label'){
+      $('#edit-tag-label').removeAttr('disabled');
+    }else{
+      $('#edit-tag-label').val('').attr('disabled', '');
+    }
+  };
 
-  input type="submit" value="edit"
+  $('#edit-tag-type').on('change', toggleLabel);
+
+  toggleLabel();
+

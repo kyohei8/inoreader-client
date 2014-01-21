@@ -30,17 +30,23 @@ class App < Sinatra::Base
     js :app, '/js/app.js', ['/js/jquery-2.0.3.min.js', '/js/bootstrap.min.js']
   end
 
-
   class SpecialTags
-    # ex: SpecialTags::TAGS[:read]
-    # TODO User ID
     TAGS = {
-        :read => 'user/1005880641/state/com.google/read',
-        :starred => 'user/1005880641/state/com.google/starred',
-        :broadcast => 'user/1005880641/state/com.google/broadcast',
-        :link => 'user/1005880641/state/com.google/like',
-        :custom => 'user/1005880641/label/'
+      :read => 'user/__uid__/state/com.google/read',
+      :starred => 'user/__uid__/state/com.google/starred',
+      :broadcast => 'user/__uid__/state/com.google/broadcast',
+      :like => 'user/__uid__/state/com.google/like',
+      :label => 'user/__uid__/label/',
     }.freeze
+
+    # @param [String] user_id
+    # @param [Symbol] tags SpecialTags::TAGS key
+    # @return [Array] Array of Hash
+    def self.generate(user_id, *tags)
+      tags.map do |tag_name|
+        {:label => tag_name, :value => TAGS[tag_name].gsub('__uid__', user_id)}
+      end
+    end
   end
 
   # root
@@ -48,13 +54,18 @@ class App < Sinatra::Base
     slim :index
   end
 
+  get '/logout' do
+    session.clear
+    redirect '/'
+  end
+
   # 認証を行う
   post '/auth' do
     session[:auth_token] = InoreaderApi::Api.auth(params['un'], params['pw'])
-    # TODO session[:user_id]
     if session[:auth_token].nil?
       'login failed!'
     else
+      session[:uid] = JSON.parse(InoreaderApi::Api.user_id session[:auth_token])['userId']
       redirect to('/')
     end
   end
@@ -126,7 +137,7 @@ class App < Sinatra::Base
 
   ## tag ##
   get '/tag' do
-    @tags = SpecialTags::TAGS
+    @tags = SpecialTags.generate(session[:uid], :read, :starred, :broadcast, :like, :label)
     slim :tag
   end
 
@@ -143,12 +154,11 @@ class App < Sinatra::Base
   # edit
   post '/edit_tag' do
     ids = params[:ids].split(' ')
-    tag_name = params[:tagname]
-    if tag_name == SpecialTags::TAGS[:custom]
-      tag_name = params[:tagname] + params[:ctagname]
-    end
+    tag = params[:tagname]
+    label = params[:labelname]
+    tag << label if label
     method = params[:type] == 'a' ? :add_tag : :remove_tag
-    InoreaderApi::Api.send(method, session[:auth_token], ids, tag_name)
+    InoreaderApi::Api.send(method, session[:auth_token], ids, tag)
   end
 
   # mark all as read
@@ -181,6 +191,7 @@ class App < Sinatra::Base
   # edit subscription
   # /edit_subscription?ac=edit&s=feed/http://blog.lofei.info/atom.xml&t=lofei_blog
   post '/edit_subscription' do
+    # TODO
     if params[:type] == 'u'
       # unsubscribe
       InoreaderApi::Api.unsubscribe session[:auth_token], params[:s]
@@ -215,8 +226,6 @@ class App < Sinatra::Base
   post '/set_subscription_ordering' do
     InoreaderApi::Api.set_subscription_ordering session[:auth_token], params[:s], params[:v]
   end
-
-  # TODO  input系は全部POSTにする
 
   not_found do
     slim :'404'
