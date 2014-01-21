@@ -195,8 +195,10 @@ module InoreaderApi
       # subscribe (=add Subscription)
       # @param [String] token auth token
       # @param [String] s stream id(feed/feed_url)
-      def subscribe(token, s)
-        edit_subscription token, :subscribe, s
+      # @param [String] a folder name
+      def subscribe(token, s, a)
+        p a
+        edit_subscription token, :subscribe, s ,nil, a
       end
 
       # preference list:current subscriptions sorting.
@@ -220,7 +222,7 @@ module InoreaderApi
         ApiHelper.request '/reader/api/0/preference/stream/set', query ,:post
       end
 
-      # Set stream preferences is now is “subscription-ordering” only
+      # Set stream preferences. now is “subscription-ordering” only :P
       # @param [String] token auth token
       # @param [String] s stream id. root or folder name
       # @param [String] v sorting value

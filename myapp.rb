@@ -28,6 +28,7 @@ class App < Sinatra::Base
     serve '/js', from: 'app/js'
     css :bootstrap, %w(/css/bootstrap.css)
     js :app, '/js/app.js', ['/js/jquery-2.0.3.min.js', '/js/bootstrap.min.js']
+    js :subscription, '', ['/js/subscription.js']
   end
 
   class SpecialTags
@@ -117,23 +118,16 @@ class App < Sinatra::Base
   post '/stream' do
     query = create_stream_query
     feed = params[:feed]
+    method = params[:type] == 'stream' ? :stream : :item_ids
+    response = InoreaderApi::Api.send method, session[:auth_token], feed, query
+
     if params[:output] == 'json'
-      json_output InoreaderApi::Api.stream session[:auth_token], feed, query
+      json_output response
     else
-      output InoreaderApi::Api.stream session[:auth_token], feed, query
+      output response
     end
   end
 
-  # id
-  get '/item_ids' do
-    query = create_stream_query
-    feed = params[:feed]
-    if params[:output] == 'json'
-      json_output InoreaderApi::Api.item_ids session[:auth_token], feed, query
-    else
-      output InoreaderApi::Api.item_ids session[:auth_token], feed, query
-    end
-  end
 
   ## tag ##
   get '/tag' do
@@ -189,24 +183,16 @@ class App < Sinatra::Base
   end
 
   # edit subscription
-  # /edit_subscription?ac=edit&s=feed/http://blog.lofei.info/atom.xml&t=lofei_blog
   post '/edit_subscription' do
-    # TODO
     if params[:type] == 'u'
       # unsubscribe
       InoreaderApi::Api.unsubscribe session[:auth_token], params[:s]
     elsif params[:type] == 's'
-      # subscribe
-      InoreaderApi::Api.subscribe session[:auth_token], params[:feed]
+      # subscribe only
+      InoreaderApi::Api.subscribe session[:auth_token], params[:feed], params[:a]
     else
-      #remove folder
-      #InoreaderApi::Api.remove_folder_subscription session[:auth_token], params[:s], params[:r]
-
-      #add folder
-      #InoreaderApi::Api.add_folder_subscription session[:auth_token], params[:s], params[:a]
-
-      #rename subscription
-      #InoreaderApi::Api.rename_subscription session[:auth_token], params[:s], params[:t]
+      # edit
+      InoreaderApi::Api.edit_subscription session[:auth_token], :edit, params[:s], params[:t], params[:a], params[:r]
     end
   end
 
@@ -220,6 +206,13 @@ class App < Sinatra::Base
   end
 
   get '/set_subscription_ordering' do
+    @labels = []
+    data = JSON.parse(InoreaderApi::Api.user_tags_folders session[:auth_token])['tags']
+    data.each do |tag|
+      if tag['id'].include? 'label'
+        @labels << tag['id']
+      end
+    end
     slim :setStreamPref
   end
 

@@ -1,9 +1,19 @@
-form action="/set_subscription_ordering" method="post"
-  label
-    | Stream ID
-    input type="text" name="s"
-  label
-    | Value
-    input type="text" name="v"
-
-  input type="submit" value="Go!"
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal role="form" action="/set_subscription_ordering" method="post"
+        fieldset
+          legend Set stream preferences (edit subscription ordering)
+          .form-group
+            label.col-lg-2.control-label for="set-subscription-s" folder
+            .col-lg-10
+              select#set-subscription-s.form-control name="s"
+                - for label in @labels
+                  option value=label = label
+          .form-group
+            label.col-lg-2.control-label for="set-subscription-v" value
+            .col-lg-10
+              input#set-subscription-v.form-control type="text" name="v"
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" set
