@@ -1,8 +1,17 @@
-form action="/mark_all_as_read"
-  label
-    | stream
-    input type="text" name="s" placeholder="feed, label, tag..."
-  label
-    | mark as read older than
-    input type="text" name="ts" placeholder="2014/01/19 12:42"
-  input type="submit" value="mark all as read"
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal role="form" action="/mark_all_as_read" method="post"
+        fieldset
+          legend Mark all as read
+          .form-group
+            label.col-lg-2.control-label stream
+            .col-lg-10
+              input.form-control type="text" name="s" placeholder="feed or tag"
+          .form-group
+            label.col-lg-2.control-label older than
+            .col-lg-10
+              input.form-control type="text" name="ts" placeholder="2014/01/19 12:42"
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" mark all as read
