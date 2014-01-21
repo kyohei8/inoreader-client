@@ -29,6 +29,7 @@ module InoreaderApi
 
       # get user id
       # @param [String] token auth token
+      # @return [JSON] {userId : xxxxxxx}
       def user_id(token)
         JSON.generate({:userId => JSON.parse(user_info(token))['userId']})
       end
