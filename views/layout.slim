@@ -18,57 +18,58 @@ html
             span.icon-bar
             span.icon-bar
           a.navbar-brand href="/" Inoreader API Demo
-        #bs-example-navbar-collapse-1.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            li.dropdown
-              a.dropdown-toggle data-toggle="dropdown" href="#"
-                | Get
-                b.caret
-              ul.dropdown-menu
-                li
-                  a href="/user" User info
-                li
-                  a href="/user_id" User id
-                li
-                  a href="/token" Check token
-                li.divider
-                li
-                  a href="https://www.inoreader.com/reader/subscriptions/export?download=1&T=#{session[:auth_token]}" Export(download OPML file)
-                li
-                  a
-                    span Import(under construction)
-                li.divider
-                li
-                  a href="/unread" unread counters
-                li
-                  a href="/user_subscription" user subscriptions
-                li
-                  a href="/user_tags_folders" user tags and folders
+        - unless session[:auth_token].nil?
+          #bs-example-navbar-collapse-1.collapse.navbar-collapse
+            ul.nav.navbar-nav
+              li.dropdown
+                a.dropdown-toggle data-toggle="dropdown" href="#"
+                  | Get
+                  b.caret
+                ul.dropdown-menu
+                  li
+                    a href="/user" User info
+                  li
+                    a href="/user_id" User id
+                  li
+                    a href="/token" Check token
+                  li.divider
+                  li
+                    a href="https://www.inoreader.com/reader/subscriptions/export?download=1&T=#{session[:auth_token]}" Export(download OPML file)
+                  li
+                    a
+                      span Import(under construction)
+                  li.divider
+                  li
+                    a href="/unread" unread counters
+                  li
+                    a href="/user_subscription" user subscriptions
+                  li
+                    a href="/user_tags_folders" user tags and folders
 
-            li
-              /.active
-              a href="/stream" Stream / item_ids
-            li
-              a href="/tag" Tag
-            li
-              a href="/mark_all_as_read" mark all as read
-            li
-              a href="/subscription" Subscription
-            li.dropdown
-              a.dropdown-toggle data-toggle="dropdown" href="#"
-                | Preferences
-                b.caret
-              ul.dropdown-menu
-                li
-                  a href="/preferences_list" preferences list
-                li
-                  a href="/stream_preferences_list" stream preferences list
-                li
-                  a href="/set_subscription_ordering" Set stream preferences
+              li
+                /.active
+                a href="/stream" Stream / item_ids
+              li
+                a href="/tag" Tag
+              li
+                a href="/mark_all_as_read" mark all as read
+              li
+                a href="/subscription" Subscription
+              li.dropdown
+                a.dropdown-toggle data-toggle="dropdown" href="#"
+                  | Preferences
+                  b.caret
+                ul.dropdown-menu
+                  li
+                    a href="/preferences_list" preferences list
+                  li
+                    a href="/stream_preferences_list" stream preferences list
+                  li
+                    a href="/set_subscription_ordering" Set stream preferences
 
-          ul.nav.navbar-nav.navbar-right
-            li
-              a href="/logout" Logout
+            ul.nav.navbar-nav.navbar-right
+              li
+                a href="/logout" Logout
 
     .container style="margin-top: 8em;"
       == yield
