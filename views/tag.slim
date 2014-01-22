@@ -51,13 +51,12 @@
               input#edit-tag-item.form-control type="text" name="ids" placeholder="tag:google.com,2005:reader/item/000000005bbc9da3" size=50 value=""
           .form-group
             label.col-lg-2.control-label tag
-            .col-lg-10
+            .col-lg-3
               select#edit-tag-type.form-control value="" name="tagname"
                 - @tags.each do |tag|
                   option value="#{tag[:value]}" =tag[:label]
-          .form-group
-            .col-lg-10.col-lg-offset-2
-              input#edit-tag-label.form-control name="labelname" placeholder="enter label name" type="text" value=""
+            .col-lg-7
+              input#edit-tag-label.form-control name="labelname" placeholder="label name" type="text" value=""
           .form-group
             .col-lg-10.col-lg-offset-2
               button.btn.btn-primary edit
