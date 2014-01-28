@@ -4,8 +4,8 @@ require 'sinatra/partial'
 require 'sinatra/assetpack'
 require 'sinatra/json'
 require 'slim'
-require './inoreader_api.rb'
 require './util.rb'
+require 'inoreader-api'
 
 # Sinatra app
 class App < Sinatra::Base
@@ -62,7 +62,7 @@ class App < Sinatra::Base
 
   # 認証を行う
   post '/auth' do
-    session[:auth_token] = InoreaderApi::Api.auth(params['un'], params['pw'])
+    session[:auth_token] = InoreaderApi::Api.auth(params['un'], params['pw'])[:auth_token]
     if session[:auth_token].nil?
       'login failed!'
     else

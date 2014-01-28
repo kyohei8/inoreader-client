@@ -13,3 +13,5 @@ gem 'coffee-script'
 #gem 'less'
 
 #gem 'inoreader-client'
+
+gem 'inoreader-api'
