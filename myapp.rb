@@ -4,9 +4,9 @@ require 'sinatra/partial'
 require 'sinatra/assetpack'
 require 'sinatra/json'
 require 'slim'
-require './util.rb'
-require 'inoreader-api'
+require './lib/util.rb'
 require './lib/aes_crypt.rb'
+require 'inoreader-api'
 
 # Sinatra app
 class App < Sinatra::Base
