@@ -6,6 +6,7 @@ require 'sinatra/json'
 require 'slim'
 require './util.rb'
 require 'inoreader-api'
+require './lib/aes_crypt.rb'
 
 # Sinatra app
 class App < Sinatra::Base
@@ -50,7 +51,8 @@ class App < Sinatra::Base
     end
   end
 
-  # root
+  CRYPT_KEY = 'sRywAcbsUnsRTXfMb7kyFeawm4QSzf7t'
+
   get '/' do
     slim :index
   end
@@ -62,27 +64,29 @@ class App < Sinatra::Base
 
   # 認証を行う
   post '/auth' do
-    session[:auth_token] = InoreaderApi::Api.auth(params['un'], params['pw'])[:auth_token]
-    if session[:auth_token].nil?
+    response = InoreaderApi::Api.auth(params['un'], params['pw'])
+    if response[:auth_token].nil?
       'login failed!'
     else
-      session[:uid] = JSON.parse(InoreaderApi::Api.user_id session[:auth_token])['userId']
+      # encrypt token
+      session[:auth_token] = AESCrypt.encrypt(response[:auth_token], CRYPT_KEY, nil, 'AES-256-CBC')
+      session[:uid] = JSON.parse(InoreaderApi::Api.user_id token)['userId']
       redirect to('/')
     end
   end
 
   # ユーザ情報を表示
   get '/user' do
-    json_output InoreaderApi::Api.user_info session[:auth_token]
+    json_output InoreaderApi::Api.user_info token
   end
 
   get '/user_id' do
-    json_output InoreaderApi::Api.user_id session[:auth_token]
+    json_output InoreaderApi::Api.user_id token
   end
 
   #トークンを取得
   get '/token' do
-    output InoreaderApi::Api.token session[:auth_token]
+    output InoreaderApi::Api.token token
   end
 
   get '/import' do
@@ -91,23 +95,23 @@ class App < Sinatra::Base
 
   # 未読数:json
   get '/unread' do
-    json_output InoreaderApi::Api.unread_counters session[:auth_token]
+    json_output InoreaderApi::Api.unread_counters token
   end
 
   # 登録feed
   get '/user_subscription' do
-    json_output InoreaderApi::Api.user_subscription session[:auth_token]
+    json_output InoreaderApi::Api.user_subscription token
   end
 
   # タグ情報
   get '/user_tags_folders' do
-    json_output InoreaderApi::Api.user_tags_folders session[:auth_token]
+    json_output InoreaderApi::Api.user_tags_folders token
   end
 
   get '/stream' do
-    unless session[:auth_token].nil?
+    if has_token
       @feeds = []
-      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
+      JSON.parse(InoreaderApi::Api.user_subscription token)['subscriptions'].each do |subscription|
         @feeds << {:id => subscription['id'], :label => subscription['title']}
       end
     end
@@ -119,7 +123,7 @@ class App < Sinatra::Base
     query = create_stream_query
     feed = params[:feed]
     method = params[:type] == 'stream' ? :stream : :item_ids
-    response = InoreaderApi::Api.send method, session[:auth_token], feed, query
+    response = InoreaderApi::Api.send method, token, feed, query
 
     if params[:output] == 'json'
       json_output response
@@ -137,12 +141,12 @@ class App < Sinatra::Base
 
   # rename
   post '/rename_tag' do
-    InoreaderApi::Api.rename_tag session[:auth_token], params[:s], params[:dest]
+    InoreaderApi::Api.rename_tag token, params[:s], params[:dest]
   end
 
   # disable
   post '/disable_tag' do
-    InoreaderApi::Api.disable_tag session[:auth_token], params[:s]
+    InoreaderApi::Api.disable_tag token, params[:s]
   end
 
   # edit
@@ -152,7 +156,7 @@ class App < Sinatra::Base
     label = params[:labelname]
     tag << label if label
     method = params[:type] == 'a' ? :add_tag : :remove_tag
-    InoreaderApi::Api.send(method, session[:auth_token], ids, tag)
+    InoreaderApi::Api.send(method, token, ids, tag)
   end
 
   # mark all as read
@@ -164,13 +168,13 @@ class App < Sinatra::Base
   # tsより古いarticleを削除する
   post '/mark_all_as_read' do
     ts = Util.time_to_microsecond(Time.parse(params[:ts]))
-    InoreaderApi::Api.mark_all_as_read session[:auth_token], ts, params[:s]
+    InoreaderApi::Api.mark_all_as_read token, ts, params[:s]
   end
 
   get '/subscription' do
-    unless session[:auth_token].nil?
+    if has_token
       @feeds = []
-      JSON.parse(InoreaderApi::Api.user_subscription session[:auth_token])['subscriptions'].each do |subscription|
+      JSON.parse(InoreaderApi::Api.user_subscription token)['subscriptions'].each do |subscription|
         @feeds << {:id => subscription['id'], :label => subscription['title']}
       end
     end
@@ -179,35 +183,35 @@ class App < Sinatra::Base
 
   # add subscription
   post '/add_subscription' do
-    json_output InoreaderApi::Api.add_subscription session[:auth_token], params[:quickadd]
+    json_output InoreaderApi::Api.add_subscription token, params[:quickadd]
   end
 
   # edit subscription
   post '/edit_subscription' do
     if params[:type] == 'u'
       # unsubscribe
-      InoreaderApi::Api.unsubscribe session[:auth_token], params[:s]
+      InoreaderApi::Api.unsubscribe token, params[:s]
     elsif params[:type] == 's'
       # subscribe only
-      InoreaderApi::Api.subscribe session[:auth_token], params[:feed], params[:a]
+      InoreaderApi::Api.subscribe token, params[:feed], params[:a]
     else
       # edit
-      InoreaderApi::Api.edit_subscription session[:auth_token], :edit, params[:s], params[:t], params[:a], params[:r]
+      InoreaderApi::Api.edit_subscription token, :edit, params[:s], params[:t], params[:a], params[:r]
     end
   end
 
   #preferences list
   get '/preferences_list' do
-    json_output InoreaderApi::Api.preferences_list session[:auth_token]
+    json_output InoreaderApi::Api.preferences_list token
   end
 
   get '/stream_preferences_list' do
-    json_output InoreaderApi::Api.stream_preferences_list session[:auth_token]
+    json_output InoreaderApi::Api.stream_preferences_list token
   end
 
   get '/set_subscription_ordering' do
     @labels = []
-    data = JSON.parse(InoreaderApi::Api.user_tags_folders session[:auth_token])['tags']
+    data = JSON.parse(InoreaderApi::Api.user_tags_folders token)['tags']
     data.each do |tag|
       if tag['id'].include? 'label'
         @labels << tag['id']
@@ -217,7 +221,7 @@ class App < Sinatra::Base
   end
 
   post '/set_subscription_ordering' do
-    InoreaderApi::Api.set_subscription_ordering session[:auth_token], params[:s], params[:v]
+    InoreaderApi::Api.set_subscription_ordering token, params[:s], params[:v]
   end
 
   not_found do
@@ -256,4 +260,20 @@ class App < Sinatra::Base
     query
   end
 
+  def has_token
+    session[:auth_token].nil? ? false : true
+  end
+
+  # return decrypt token
+  def token
+    has_token ? AESCrypt.decrypt(session[:auth_token], CRYPT_KEY, nil, "AES-256-CBC") : nil
+  end
+
+  def masked_token
+    t = token
+    view_size = 8
+    unless t.nil?
+      token.slice(0, view_size) + 'x' * (token.size - view_size)
+    end
+  end
 end

@@ -3,7 +3,7 @@ h1 Welcome to InoReader API App
 a href="http://wiki.inoreader.com/doku.php?id=api"
   h4 API Reference
 
-- if session[:auth_token].nil?
+- unless has_token
   .row
     .col-lg-12
       .well
@@ -26,6 +26,6 @@ a href="http://wiki.inoreader.com/doku.php?id=api"
 - else
   .row
     .col-lg-12
-      p ="logined. (your authToken:#{session[:auth_token]})"
+      p ="logined. (your authToken:#{masked_token})"
       p style="font-size:small; color:#999"
         | note: authToken has been stored in the session. If you close the browser, then it will be clear.
