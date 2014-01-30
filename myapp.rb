@@ -55,9 +55,6 @@ class App < Sinatra::Base
 
   CRYPT_KEY = 'sRywAcbsUnsRTXfMb7kyFeawm4QSzf7t'
 
-  get '' do
-
-  end
   get '/' do
     slim :index
   end
@@ -274,11 +271,4 @@ class App < Sinatra::Base
     has_token ? AESCrypt.decrypt(session[:auth_token], CRYPT_KEY, nil, "AES-256-CBC") : nil
   end
 
-  def masked_token
-    t = token
-    view_size = 8
-    unless t.nil?
-      token.slice(0, view_size) + 'x' * (token.size - view_size)
-    end
-  end
 end
