@@ -25,11 +25,13 @@ class App < Sinatra::Base
   register Sinatra::AssetPack
 
   assets do
-    serve '/css', from: 'app/css'
-    serve '/js', from: 'app/js'
+    #serve '/css', from: 'app/css/'
+    #serve '/js', from: 'app/js/'
     css :bootstrap, %w(/css/bootstrap.css)
-    js :app, '/js/app.js', ['/js/jquery-2.0.3.min.js', '/js/bootstrap.min.js']
+    js :app, '/js/app.js', %w(/js/lib/angular.min.js /js/lib/ui-bootstrap-tpls.min.js /js/lib/jquery-2.0.3.min.js /js/main.js)
     js :subscription, '', ['/js/subscription.js']
+
+    js_compression  :jsmin
   end
 
   class SpecialTags
@@ -53,6 +55,9 @@ class App < Sinatra::Base
 
   CRYPT_KEY = 'sRywAcbsUnsRTXfMb7kyFeawm4QSzf7t'
 
+  get '' do
+
+  end
   get '/' do
     slim :index
   end

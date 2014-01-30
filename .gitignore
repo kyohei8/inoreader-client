@@ -2,3 +2,4 @@
 .bundle
 .rbenv-gemsets
 pkg
+bower_components
