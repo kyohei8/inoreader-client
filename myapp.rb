@@ -30,6 +30,7 @@ class App < Sinatra::Base
     css :bootstrap, %w(/css/bootstrap.css)
     js :app, '/js/app.js', %w(/js/lib/angular.min.js /js/lib/ui-bootstrap-tpls.min.js /js/lib/jquery-2.0.3.min.js /js/main.js)
     js :subscription, '', ['/js/subscription.js']
+    js :stream, '', ['/js/stream.js']
 
     js_compression  :jsmin
   end
@@ -111,13 +112,17 @@ class App < Sinatra::Base
   end
 
   get '/stream' do
+    slim :stream
+  end
+
+  get '/feeds' do
+    feeds = []
     if has_token
-      @feeds = []
       JSON.parse(InoreaderApi::Api.user_subscription token)['subscriptions'].each do |subscription|
-        @feeds << {:id => subscription['id'], :label => subscription['title']}
+        feeds << {:id => subscription['id'], :label => subscription['title']}
       end
     end
-    slim :stream
+    feeds.to_json
   end
 
   # feed表示
