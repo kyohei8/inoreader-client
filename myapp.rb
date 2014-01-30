@@ -129,9 +129,9 @@ class App < Sinatra::Base
   post '/stream' do
     query = create_stream_query
     feed = params[:feed]
-    method = params[:type] == 'stream' ? :stream : :item_ids
+    method = params[:type] == 'stream' ? :items : :item_ids
+    p method, token, feed, query
     response = InoreaderApi::Api.send method, token, feed, query
-
     if params[:output] == 'json'
       json_output response
     else
