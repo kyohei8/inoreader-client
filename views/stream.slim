@@ -1,21 +1,21 @@
 .row ng-controller="StreamController"
   .col-lg-12
     .well
-      form.form-horizontal role="form" action="/stream" method="post"
+      form.form-horizontal name="stream" role="form" ng-submit="submit()"
         fieldset
           legend Stream item / item ids
           .form-group
             label.col-lg-2.control-label Request method
-            .col-lg-2 ng-repeat="type in types"
+            .col-lg-2 ng-repeat="t in types"
               .radio
                 label
-                  input name="type" type="radio" value="{{type.value}}" checked="" {{type.label}}
+                  input name="type" type="radio" ng-model="$parent.type" ng-value="t.value"  {{t.label}}
           .form-group
             label.col-lg-2.control-label feed
             .col-lg-10
-              select.form-control value="" name="feed"
+              select.form-control value="" name="feed" ng-model="feed" ng-disabled="feedDisabled"
                 option value=""
-                option ng-repeat="feed in feeds" value="{{feed.id}}" {{feed.label}}
+                option ng-repeat="f in feeds" value="{{f.id}}" {{f.label}}
           .form-group
             .col-lg-10.col-lg-offset-2
               div
@@ -24,39 +24,42 @@
             .form-group
               label.col-lg-2.control-label for="numberOfItems" number of items
               .col-lg-10
-                input#numberOfItems.form-control name="n" type="number" value="20" min="1" max="1000"
+                input#numberOfItems.form-control name="n" ng-model="n" type="number" min="1" max="1000"
             .form-group
               label.col-lg-2.control-label order
               .col-lg-2 ng-repeat="sort in sorts"
                 .radio
                   label
-                    input name="r" type="radio" value="{{sort.value}}" ng-checked="{{sort.checked}}" {{sort.label}}
+                    input type="radio" name="r" ng-model="$parent.r" ng-value="sort.value" {{sort.label}}
             .form-group
               label.col-lg-2.control-label for="ot" start time
               .col-lg-10
-                input#ot.form-control name="ot" type="datetime" value=""
+                input#ot.form-control name="ot" ng-model="ot" type="datetime"
             .form-group
               label.col-lg-2.control-label exclude Target
               .col-lg-2 ng-repeat="xt in exTargets"
                 .radio
                   label
-                    input name="xt" type="radio" value="{{xt.value}}" ng-checked="{{xt.checked}}" {{xt.label}}
+                    input type="radio" name="xt" ng-model="$parent.xt" ng-value="xt.value" {{xt.label}}
             .form-group
               label.col-lg-2.control-label include Target
               .col-lg-2 ng-repeat="it in icTargets"
                 .radio
                   label
-                    input name="it" type="radio" value="{{it.value}}" ng-checked="{{it.checked}}" {{it.label}}
+                    input type="radio" name="it" ng-model="$parent.it" ng-value="it.value" {{it.label}}
             .form-group
               label.col-lg-2.control-label for="continuation" continuation
               .col-lg-10
-                input#continuation.form-control name="c" type="text" value=""
+                input#continuation.form-control type="text" name="c" ng-model="c"
             .form-group
-              label.col-lg-2.control-label output format
+              label.col-lg-2.control-label
+                | output format
+                br
+                  | (json only, sorry :p)
               .col-lg-2 ng-repeat="op in outputs"
                 .radio
                   label
-                    input name="output" type="radio" value="{{op.value}}" ng-checked="{{op.checked}}" {{op.label}}
+                    input type="radio" name="output" ng-model="$parent.output" ng-value="op.value" ng-disabled="true" {{op.label}}
           .form-group
             .col-lg-10.col-lg-offset-2
               button.btn.btn-primary type="submit" Submit

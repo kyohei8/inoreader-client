@@ -67,29 +67,37 @@ class App < Sinatra::Base
 
   # 認証を行う
   post '/auth' do
-    response = InoreaderApi::Api.auth(params['un'], params['pw'])
-    if response[:auth_token].nil?
-      'login failed!'
-    else
+    begin
+      ino = InoreaderApi::Api.new(:username => params['un'], :password => params['pw'])
+      auth_token = ino.auth_token
+      user_id = ino.user_id
+
       # encrypt token
-      session[:auth_token] = AESCrypt.encrypt(response[:auth_token], CRYPT_KEY, nil, 'AES-256-CBC')
-      session[:uid] = JSON.parse(InoreaderApi::Api.user_id token)['userId']
+      session[:auth_token] = AESCrypt.encrypt(auth_token, CRYPT_KEY, nil, 'AES-256-CBC')
+      session[:uid] = user_id.userId
+
       redirect to('/')
+    rescue => e
+      p e.message
+      'login failed!'
     end
   end
 
   # ユーザ情報を表示
   get '/user' do
-    json_output InoreaderApi::Api.user_info token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.user_info.to_json
   end
 
   get '/user_id' do
-    json_output InoreaderApi::Api.user_id token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.user_id.to_json
   end
 
   #トークンを取得
   get '/token' do
-    output InoreaderApi::Api.token token
+    ino = InoreaderApi::Api.new :auth_token => token
+    # TODO output ino.token.to_s
   end
 
   get '/import' do
@@ -98,17 +106,20 @@ class App < Sinatra::Base
 
   # 未読数:json
   get '/unread' do
-    json_output InoreaderApi::Api.unread_counters token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.unread_counters.to_json
   end
 
   # 登録feed
   get '/user_subscription' do
-    json_output InoreaderApi::Api.user_subscription token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.user_subscription.to_json
   end
 
   # タグ情報
   get '/user_tags_folders' do
-    json_output InoreaderApi::Api.user_tags_folders token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.user_tags_folders.to_json
   end
 
   get '/stream' do
@@ -117,26 +128,28 @@ class App < Sinatra::Base
 
   get '/feeds' do
     feeds = []
+    ino = InoreaderApi::Api.new :auth_token => token
     if has_token
-      JSON.parse(InoreaderApi::Api.user_subscription token)['subscriptions'].each do |subscription|
+      ino.user_subscription.subscriptions.each do |subscription|
         feeds << {:id => subscription['id'], :label => subscription['title']}
       end
     end
     feeds.to_json
   end
 
-  # feed表示
+  # feed itemの表示
   post '/stream' do
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
     query = create_stream_query
     feed = params[:feed]
     method = params[:type] == 'stream' ? :items : :item_ids
-    p method, token, feed, query
-    response = InoreaderApi::Api.send method, token, feed, query
-    if params[:output] == 'json'
-      json_output response
-    else
-      output response
-    end
+    httparty_response = ino.send method, feed, query
+
+    request_url = httparty_response.request.last_uri.to_s
+
+    # json only
+    json_output httparty_response.body
+
   end
 
 
@@ -263,7 +276,7 @@ class App < Sinatra::Base
     query[:xt] = params[:xt] unless params[:xt].empty?
     query[:it] = params[:it] unless params[:it].empty?
     query[:c] = params[:c] unless params[:c].empty?
-    query[:output] = params[:output] unless params[:output].empty?
+    #query[:output] = params[:output] unless params[:output].empty?
     query
   end
 

@@ -1,17 +1,20 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    backports (3.4.0)
+    backports (3.4.1)
     coffee-script (2.2.0)
       coffee-script-source
       execjs
     coffee-script-source (1.7.0)
     execjs (2.0.2)
+    hashie (2.0.5)
     httparty (0.12.0)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
-    inoreader-api (0.0.2)
+    inoreader-api (0.0.4)
+      hashie
       httparty
+      multi_json
     jsmin (1.0.1)
     json (1.8.1)
     multi_json (1.8.4)
