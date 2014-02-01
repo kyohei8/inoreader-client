@@ -1,17 +1,19 @@
-.row
+.row ng-controller="markController"
   .col-lg-12
     .well
-      form.form-horizontal role="form" action="/mark_all_as_read" method="post"
+      form.form-horizontal role="form" name="markAllAsRead" ng-submit="submit()"
         fieldset
           legend Mark all as read
           .form-group
             label.col-lg-2.control-label stream
             .col-lg-10
-              input.form-control type="text" name="s" placeholder="feed or tag"
+              input.form-control type="text" name="s" ng-model="s" placeholder="feed or tag"
           .form-group
             label.col-lg-2.control-label older than
             .col-lg-10
-              input.form-control type="text" name="ts" placeholder="2014/01/19 12:42"
+              input.form-control type="text" name="ts" ng-model="ts" placeholder="2014/01/19 12:42"
           .form-group
             .col-lg-10.col-lg-offset-2
               button.btn.btn-primary type="submit" mark all as read
+  == slim :output
+== js :mark

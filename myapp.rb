@@ -32,6 +32,7 @@ class App < Sinatra::Base
     js :subscription, '', ['/js/subscription.js']
     js :stream, '', ['/js/stream.js']
     js :tag, ['/js/tag.js']
+    js :mark, ['/js/mark.js']
 
     js_compression :jsmin
   end
@@ -200,7 +201,8 @@ class App < Sinatra::Base
   # tsより古いarticleを削除する
   post '/mark_all_as_read' do
     ts = Util.time_to_microsecond(Time.parse(params[:ts]))
-    InoreaderApi::Api.mark_all_as_read token, ts, params[:s]
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    json_output_with_url(ino.mark_all_as_read ts, params[:s])
   end
 
   get '/subscription' do
