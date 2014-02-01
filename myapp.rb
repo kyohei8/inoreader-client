@@ -27,10 +27,11 @@ class App < Sinatra::Base
   assets do
     #serve '/css', from: 'app/css/'
     #serve '/js', from: 'app/js/'
-    css :bootstrap, %w(/css/bootstrap.css)
+    css :bootstrap, %w(/css/bootstrap.css /css/app.css)
     js :app, '/js/app.js', %w(/js/lib/angular.min.js /js/lib/ui-bootstrap-tpls.min.js /js/lib/jquery-2.0.3.min.js /js/main.js)
     js :subscription, '', ['/js/subscription.js']
     js :stream, '', ['/js/stream.js']
+    js :tag, ['/js/tag.js']
 
     js_compression :jsmin
   end
@@ -150,28 +151,44 @@ class App < Sinatra::Base
 
   ## tag ##
   get '/tag' do
-    @tags = SpecialTags.generate(session[:uid], :read, :starred, :broadcast, :like, :label)
     slim :tag
+  end
+
+  get '/tags' do
+    ino = InoreaderApi::Api.new :auth_token => token
+    ino.user_tags_folders.tags.select { |tag|
+      tag.id.include? 'label' and tag.id[-1] != '/'
+    }.map { |tag|
+      tag.id.split('/').last
+    }.to_json
+  end
+
+  # get special tag
+  get '/special_tags' do
+    SpecialTags.generate(session[:uid], :read, :starred, :broadcast, :like, :label).to_json
   end
 
   # rename
   post '/rename_tag' do
-    InoreaderApi::Api.rename_tag token, params[:s], params[:dest]
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    json_output_with_url(ino.rename_tag params[:s], params[:dest])
   end
 
   # disable
   post '/disable_tag' do
-    InoreaderApi::Api.disable_tag token, params[:s]
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    json_output_with_url(ino.disable_tag params[:s])
   end
 
   # edit
   post '/edit_tag' do
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
     ids = params[:ids].split(' ')
     tag = params[:tagname]
     label = params[:labelname]
-    tag << label if label
+    tag << label unless label.empty?
     method = params[:type] == 'a' ? :add_tag : :remove_tag
-    InoreaderApi::Api.send(method, token, ids, tag)
+    json_output_with_url ino.send(method, ids, tag)
   end
 
   # mark all as read
@@ -274,6 +291,13 @@ class App < Sinatra::Base
   # return decrypt token
   def token
     has_token ? AESCrypt.decrypt(session[:auth_token], CRYPT_KEY, nil, "AES-256-CBC") : nil
+  end
+
+  def json_output_with_url(httparty_response)
+    {
+      :url => URI.decode(httparty_response.request.last_uri.to_s),
+      :body => httparty_response.body
+    }.to_json
   end
 
 end

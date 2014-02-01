@@ -63,13 +63,14 @@
           .form-group
             .col-lg-10.col-lg-offset-2
               button.btn.btn-primary type="submit" ng-disabled="feedDisabled || connecting" Submit
-  .col-lg-12
+  == slim :output
+  /.col-lg-12
     .panel.panel-default
       .panel-heading Request Url
       .panel-body
         | {{requestUrl}}
 
-  .col-lg-12
+  /.col-lg-12
     .panel.panel-default
       .panel-heading Response Body
       .panel-body
