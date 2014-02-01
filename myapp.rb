@@ -33,6 +33,7 @@ class App < Sinatra::Base
     js :stream, '', ['/js/stream.js']
     js :tag, ['/js/tag.js']
     js :mark, ['/js/mark.js']
+    js :pref, ['/js/pref.js']
 
     js_compression :jsmin
   end
@@ -246,18 +247,12 @@ class App < Sinatra::Base
   end
 
   get '/set_subscription_ordering' do
-    @labels = []
-    data = JSON.parse(InoreaderApi::Api.user_tags_folders token)['tags']
-    data.each do |tag|
-      if tag['id'].include? 'label'
-        @labels << tag['id']
-      end
-    end
     slim :setStreamPref
   end
 
   post '/set_subscription_ordering' do
-    InoreaderApi::Api.set_subscription_ordering token, params[:s], params[:v]
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    json_output_with_url(ino.set_subscription_ordering params[:s], params[:v])
   end
 
   not_found do

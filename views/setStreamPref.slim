@@ -1,19 +1,19 @@
-.row
+.row ng-controller="prefController"
   .col-lg-12
     .well
-      form.form-horizontal role="form" action="/set_subscription_ordering" method="post"
+      form.form-horizontal role="form" name="setSubscriptionOrdering" ng-submit="submit()"
         fieldset
           legend Set stream preferences (edit subscription ordering)
           .form-group
             label.col-lg-2.control-label for="set-subscription-s" folder
             .col-lg-10
-              select#set-subscription-s.form-control name="s"
-                - for label in @labels
-                  option value=label = label
+              tags
           .form-group
             label.col-lg-2.control-label for="set-subscription-v" value
             .col-lg-10
-              input#set-subscription-v.form-control type="text" name="v"
+              input#set-subscription-v.form-control type="text" name="v" ng-model="v"
           .form-group
             .col-lg-10.col-lg-offset-2
-              button.btn.btn-primary type="submit" set
+              button.btn.btn-primary type="submit" ng-disabled="connecting" set
+  == slim :output
+== js :pref
