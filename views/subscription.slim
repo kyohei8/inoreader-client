@@ -1,61 +1,54 @@
-.row
-  .col-lg-12
-    .well
-      form.form-horizontal role="form" action="/add_subscription" method="post"
-        fieldset
-          legend add subscription
-          .form-group
-            label.col-lg-2.control-label url
-            .col-lg-10
-              input.form-control type="text" name="quickadd" placeholder="http://..."
-          .form-group
-            .col-lg-10.col-lg-offset-2
-              button.btn.btn-primary type="submit" add
-
-.row
-  .col-lg-12
-    .well
-      form.form-horizontal role="form" action="/edit_subscription" method="post"
-        fieldset
-          legend edit subscription
-          .form-group
-            label.col-lg-2.control-label type
-            .col-lg-2
-              .radio
-                label
-                  input name="type" type="radio" value="e" checked="" edit
-            .col-lg-2
-              .radio
-                label
-                  input name="type" type="radio" value="u" unsubscribe
-            .col-lg-2
-              .radio
-                label
-                  input name="type" type="radio" value="s" subscribe
-          .form-group
-            label.col-lg-2.control-label for="edit-subscription-feed" feed
-            .col-lg-10
-              select#edit-subscription-feed.form-control value="" name="s"
-                - for feed in @feeds
-                  option value=feed[:id] = feed[:label]
-          .form-group
-            label.col-lg-2.control-label for="edit-subscription-new" new feed url
-            .col-lg-10
-              input#edit-subscription-new.form-control[type="text" name="feed" disabled]
-          .form-group
-            label.col-lg-2.control-label for="edit-subscription-title" new title
-            .col-lg-10
-              input#edit-subscription-title.form-control type="text" name="t"
-          .form-group
-            label.col-lg-2.control-label for="edit-subscription-add" add tag/folder
-            .col-lg-10
-              input#edit-subscription-add.form-control  type="text" name="a" value="user/#{session[:uid]}/label/"
-          .form-group
-            label.col-lg-2.control-label for="edit-subscription-remove" remove tag/folder
-            .col-lg-10
-              input#edit-subscription-remove.form-control  type="text" name="r"
-          .form-group
-            .col-lg-10.col-lg-offset-2
-              button.btn.btn-primary type="submit" edit
-
+tabset
+  tab heading="add"
+    .row ng-controller="addSubscriptionController"
+      .col-lg-12
+        .well
+          form.form-horizontal role="form" name="addSubscription" ng-submit="submit()"
+            fieldset
+              legend Add subscription
+              .form-group
+                label.col-lg-2.control-label url
+                .col-lg-10
+                  input.form-control type="text" name="quickadd" ng-model="quickadd" placeholder="http://..."
+              .form-group
+                .col-lg-10.col-lg-offset-2
+                  button.btn.btn-primary type="submit" ng-disabled="connecting" add
+      == slim :output
+  tab heading="edit"
+    .row ng-controller="editSubscriptionController"
+      .col-lg-12
+        .well
+          form.form-horizontal role="form" name="editSubscription" ng-submit="submit()"
+            fieldset
+              legend Edit subscription
+              .form-group
+                label.col-lg-2.control-label type
+                .col-lg-2 ng-repeat="t in types"
+                  .radio
+                    label
+                      input type="radio" name="type" ng-model="$parent.type" ng-value="t.value" {{t.label}}
+              .form-group
+                label.col-lg-2.control-label for="edit-subscription-feed" feed
+                .col-lg-10
+                  feeds
+              .form-group
+                label.col-lg-2.control-label for="edit-subscription-new" new feed url
+                .col-lg-10
+                  input#edit-subscription-new.form-control type="text" name="feed" ng-model="feed" ng-disabled="feedDisabled"
+              .form-group
+                label.col-lg-2.control-label for="edit-subscription-title" new title
+                .col-lg-10
+                  input#edit-subscription-title.form-control type="text" name="t" ng-model="t" ng-disabled="tDisabled"
+              .form-group
+                label.col-lg-2.control-label for="edit-subscription-add" add tag/folder
+                .col-lg-10
+                  input#edit-subscription-add.form-control  type="text" name="a" ng-model="a" ng-disabled="aDisabled" placeholder="user/#{session[:uid]}/label/"
+              .form-group
+                label.col-lg-2.control-label for="edit-subscription-remove" remove tag/folder
+                .col-lg-10
+                  input#edit-subscription-remove.form-control  type="text" name="r" ng-model="r" ng-disabled="rDisabled"
+              .form-group
+                .col-lg-10.col-lg-offset-2
+                  button.btn.btn-primary type="submit" ng-disabled="connecting" edit
+      == slim :output
 == js :subscription

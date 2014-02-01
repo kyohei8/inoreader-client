@@ -206,41 +206,43 @@ class App < Sinatra::Base
   end
 
   get '/subscription' do
-    if has_token
-      @feeds = []
-      JSON.parse(InoreaderApi::Api.user_subscription token)['subscriptions'].each do |subscription|
-        @feeds << {:id => subscription['id'], :label => subscription['title']}
-      end
-    end
     slim :subscription
   end
 
   # add subscription
   post '/add_subscription' do
-    json_output InoreaderApi::Api.add_subscription token, params[:quickadd]
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    json_output_with_url(ino.add_subscription params[:quickadd])
   end
 
   # edit subscription
   post '/edit_subscription' do
-    if params[:type] == 'u'
+    ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
+    res = if params[:type] == 'u'
       # unsubscribe
-      InoreaderApi::Api.unsubscribe token, params[:s]
+      ino.unsubscribe params[:s]
     elsif params[:type] == 's'
       # subscribe only
-      InoreaderApi::Api.subscribe token, params[:feed], params[:a]
+      ino.subscribe params[:feed], params[:a]
     else
       # edit
-      InoreaderApi::Api.edit_subscription token, :edit, params[:s], params[:t], params[:a], params[:r]
+      add = params[:a].empty? ? nil : params[:a]
+      remove = params[:r].empty? ? nil : params[:r]
+      title = params[:t].empty? ? nil : params[:t]
+      ino.edit_subscription :edit, params[:s], title, add ,remove
     end
+    json_output_with_url res
   end
 
   #preferences list
   get '/preferences_list' do
-    json_output InoreaderApi::Api.preferences_list token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.preferences_list.to_json
   end
 
   get '/stream_preferences_list' do
-    json_output InoreaderApi::Api.stream_preferences_list token
+    ino = InoreaderApi::Api.new :auth_token => token
+    json_output ino.stream_preferences_list.to_json
   end
 
   get '/set_subscription_ordering' do
