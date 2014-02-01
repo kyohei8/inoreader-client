@@ -1,0 +1,12 @@
+.col-lg-12
+  .panel.panel-default
+    .panel-heading Request Url
+    .panel-body
+      | {{requestUrl}}
+
+.col-lg-12
+  .panel.panel-default
+    .panel-heading Response Body
+    .panel-body
+      pre ng-hide="!responseBody"
+        | {{responseBody | json}}
