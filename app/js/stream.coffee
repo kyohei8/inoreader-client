@@ -2,8 +2,11 @@ app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
   $scope.hideAdvancedOption = true
   $scope.advancedOptionText = 'show Advanced option'
   $scope.feedDisabled = true
+  $scope.connecting = false
+  $scope.requestUrl = ''
+  $scope.responseBody = ''
 
-  $scope.type = 'itemids'
+  $scope.type = 'stream'
   $scope.feed = ''
   $scope.n = 20
   $scope.r = ''
@@ -15,30 +18,30 @@ app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
 
 
   $scope.types = [
-    {value: 'stream', label: 'stream'},
-    {value: 'itemids', label: 'item ids'}
+    {value : 'stream', label : 'items'},
+    {value : 'itemids', label : 'item ids'}
   ]
 
   $scope.sorts = [
-    {value: '', label: 'newest'},
-    {value: 'o', label: 'oldest'}
+    {value : '', label : 'newest'},
+    {value : 'o', label : 'oldest'}
   ]
 
   $scope.exTargets = [
-    {value: '', label: 'all'},
-    {value: 'user/-/state/com.google/read', label: 'unread only'}
+    {value : '', label : 'all'},
+    {value : 'user/-/state/com.google/read', label : 'unread only'}
   ]
 
   $scope.icTargets = [
-    {value: '', label: 'all'},
-    {value: 'user/-/state/com.google/read', label: 'read'},
-    {value: 'user/-/state/com.google/starred', label: 'starred'},
-    {value: 'user/-/state/com.google/like', label: 'like'}
+    {value : '', label : 'all'},
+    {value : 'user/-/state/com.google/read', label : 'read'},
+    {value : 'user/-/state/com.google/starred', label : 'starred'},
+    {value : 'user/-/state/com.google/like', label : 'like'}
   ]
 
   $scope.outputs = [
-    {value: 'json', label: 'JSON'},
-    {value: 'xml', label: 'XML'}
+    {value : 'json', label : 'JSON'},
+    {value : 'xml', label : 'XML'}
   ]
 
   # 詳細の表示非表示
@@ -52,18 +55,34 @@ app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
   # feedを取得
   $http.get('/feeds').success((data) ->
     $scope.feeds = data
-    $scope.feedDisabled = false
-  )
+    $scope.feedDisabled = false)
 
   $scope.submit = ->
-    console.log @n
-    console.log @r
-    console.log @ot
-    console.log @xt
-    console.log @it
-    console.log @c
-  
-    #$http.post('/stream', )
-    console.log 'submit!'
+    query =
+      n : @n
+      r : @r
+      ot : @ot
+      xt : @xt
+      it : @it
+      c : @c
 
+    data =
+      type : @type
+      feed : @feed
+      query : query
+
+
+    $scope.requestUrl = ''
+    $scope.responseBody = ''
+    $scope.connecting = true
+    $http({
+      url : '/stream',
+      method : 'POST',
+      data : $.param(data),
+      headers :
+        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
+    }).success (res) ->
+      $scope.connecting = false
+      $scope.requestUrl = res.url
+      $scope.responseBody = angular.fromJson(res.body)
 ])

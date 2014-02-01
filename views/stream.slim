@@ -62,17 +62,18 @@
                     input type="radio" name="output" ng-model="$parent.output" ng-value="op.value" ng-disabled="true" {{op.label}}
           .form-group
             .col-lg-10.col-lg-offset-2
-              button.btn.btn-primary type="submit" Submit
+              button.btn.btn-primary type="submit" ng-disabled="feedDisabled || connecting" Submit
   .col-lg-12
     .panel.panel-default
       .panel-heading Request Url
       .panel-body
-        | http://www.onfsdopjfposadpfhsoadfhsaidh/fdsfoih/o/i/hdf
+        | {{requestUrl}}
 
   .col-lg-12
     .panel.panel-default
       .panel-heading Response Body
       .panel-body
-        | http://www.onfsdopjfposadpfhsoadfhsaidh/fdsfoih/o/i/hdf
+        pre ng-hide="!responseBody"
+          | {{responseBody | json}}
 
 == js :stream

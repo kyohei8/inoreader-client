@@ -32,7 +32,7 @@ class App < Sinatra::Base
     js :subscription, '', ['/js/subscription.js']
     js :stream, '', ['/js/stream.js']
 
-    js_compression  :jsmin
+    js_compression :jsmin
   end
 
   class SpecialTags
@@ -140,18 +140,13 @@ class App < Sinatra::Base
   # feed itemの表示
   post '/stream' do
     ino = InoreaderApi::Api.new :auth_token => token, :return_httparty_response => true
-    query = create_stream_query
-    feed = params[:feed]
     method = params[:type] == 'stream' ? :items : :item_ids
-    httparty_response = ino.send method, feed, query
-
-    request_url = httparty_response.request.last_uri.to_s
-
-    # json only
-    json_output httparty_response.body
-
+    httparty_response = ino.send method, params[:feed], params[:query]
+    {
+      :url => URI.decode(httparty_response.request.last_uri.to_s),
+      :body => httparty_response.body
+    }.to_json
   end
-
 
   ## tag ##
   get '/tag' do
@@ -255,9 +250,13 @@ class App < Sinatra::Base
 
   private
 
+  def pretty_json(json)
+    Rack::Utils.escape_html JSON.pretty_generate JSON.parse json
+  end
+
   #jsonを読める形でhtmlに出力
   def json_output(json)
-    @output = "#{Rack::Utils.escape_html JSON.pretty_generate JSON.parse json }"
+    @output = pretty_json json
     slim :renderText
   end
 
@@ -266,18 +265,6 @@ class App < Sinatra::Base
   def output(data)
     @output = "#{Rack::Utils.escape_html data }"
     slim :renderText
-  end
-
-  def create_stream_query
-    query = {}
-    query[:n] = params[:n] unless params[:n].empty?
-    query[:r] = params[:r] unless params[:r].empty?
-    query[:ot] = params[:ot] unless params[:ot].empty?
-    query[:xt] = params[:xt] unless params[:xt].empty?
-    query[:it] = params[:it] unless params[:it].empty?
-    query[:c] = params[:c] unless params[:c].empty?
-    #query[:output] = params[:output] unless params[:output].empty?
-    query
   end
 
   def has_token
