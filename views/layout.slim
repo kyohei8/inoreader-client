@@ -10,7 +10,7 @@ html
     == js :app
 
   body ng-app="app"
-    nav.navbar.navbar-inverse.navbar-fixed-top role="navigation"
+    nav.navbar.navbar-inverse.navbar-fixed-top role="navigation" ng-controller="navController"
       .container
         .navbar-header
           a.navbar-brand href="/" Inoreader API Demo
@@ -22,7 +22,7 @@ html
         - if has_token
           .collapse.navbar-collapse collapse="navCollapsed"
             ul.nav.navbar-nav
-              li.dropdown
+              li.dropdown ng-class="{active: isActive('/user') || isActive('/user_id') || isActive('/token') || isActive('/unread') || isActive('/user_subscription') || isActive('/user_tags_folders')}"
                 a.dropdown-toggle data-toggle="dropdown" href="#"
                   | Get
                   b.caret
@@ -47,15 +47,15 @@ html
                   li
                     a href="/user_tags_folders" user tags and folders
 
-              li
+              li ng-class="{active: isActive('/stream')}"
                 a href="/stream" Stream
-              li
+              li ng-class="{active: isActive('/tag')}"
                 a href="/tag" Tag
-              li
+              li ng-class="{active: isActive('/mark_all_as_read')}"
                 a href="/mark_all_as_read" Mark all as read
-              li
+              li ng-class="{active: isActive('/subscription')}"
                 a href="/subscription" Subscription
-              li.dropdown
+              li.dropdown ng-class="{active: isActive('/preferences_list') || isActive('/stream_preferences_list') || isActive('/set_subscription_ordering')}"
                 a.dropdown-toggle data-toggle="dropdown" href="#"
                   | Preferences
                   b.caret

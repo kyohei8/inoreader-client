@@ -98,7 +98,7 @@ class App < Sinatra::Base
   #トークンを取得
   get '/token' do
     ino = InoreaderApi::Api.new :auth_token => token
-    # TODO output ino.token.to_s
+    output ino.token
   end
 
   get '/import' do
