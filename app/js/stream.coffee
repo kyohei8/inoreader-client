@@ -1,4 +1,4 @@
-app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
+app.controller('StreamController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.hideAdvancedOption = true
   $scope.advancedOptionText = 'show Advanced option'
   $scope.feedDisabled = true
@@ -57,6 +57,8 @@ app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
     $scope.feeds = data
     $scope.feedDisabled = false)
 
+
+
   $scope.submit = ->
     query =
       n : @n
@@ -75,14 +77,13 @@ app.controller('StreamController', ['$scope', '$http', ($scope, $http) ->
     $scope.requestUrl = ''
     $scope.responseBody = ''
     $scope.connecting = true
-    $http({
-      url : '/stream',
-      method : 'POST',
-      data : $.param(data),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+
+    $request.send('/stream', data, 'POST', (res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
       $scope.responseBody = angular.fromJson(res.body)
+    , ->
+      $scope.connecting = false
+    )
+
 ])

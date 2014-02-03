@@ -1,8 +1,7 @@
-app.controller('prefController',['$scope', '$http', ($scope, $http) ->
+app.controller('prefController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.requestUrl = ''
   $scope.responseBody = ''
-  $scope.connecting = false
-  # タグを取得
+  $scope.connecting = false # タグを取得
   $scope.getTags = ->
     $scope.connecting = true
     $http.get('/tags').success((res) ->
@@ -13,18 +12,9 @@ app.controller('prefController',['$scope', '$http', ($scope, $http) ->
   # sumit
   $scope.submit = ->
     $scope.connecting = true
-
-    $http({
-      url : '/set_subscription_ordering',
-      method : 'POST',
-      data : $.param({
-        s : $scope.s
-        v : $scope.v
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+    $request.send('/set_subscription_ordering', { s : $scope.s, v : $scope.v }, 'POST', ((res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
-      $scope.responseBody = res.body
+      $scope.responseBody = res.body), ->
+      $scope.connecting = false)
 ]);

@@ -1,4 +1,4 @@
-app.controller('renameTagController', ['$scope', '$http', ($scope, $http) ->
+app.controller('renameTagController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.s = ''
   $scope.dest = ''
   $scope.requestUrl = ''
@@ -16,26 +16,17 @@ app.controller('renameTagController', ['$scope', '$http', ($scope, $http) ->
   # sumit
   $scope.submit = ->
     $scope.connecting = true
-
-    $http({
-      url : '/rename_tag',
-      method : 'POST',
-      data : $.param({
-        s : $scope.s
-        dest : $scope.dest
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+    $request.send '/rename_tag', { s : $scope.s, dest : $scope.dest }, 'POST', ((res) ->
       $scope.connecting = false
       $scope.dest = ''
       $scope.requestUrl = res.url
       $scope.responseBody = res.body
-      $scope.getTags()
+      $scope.getTags()), ->
+      $scope.connecting = false
 ])
 
 
-app.controller('deleteTagController', ['$scope', '$http', ($scope, $http) ->
+app.controller('deleteTagController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.s = ''
   $scope.requestUrl = ''
   $scope.responseBody = ''
@@ -52,25 +43,16 @@ app.controller('deleteTagController', ['$scope', '$http', ($scope, $http) ->
   # sumit
   $scope.submit = ->
     $scope.connecting = true
-
-    $http({
-      url : '/disable_tag',
-      method : 'POST',
-      data : $.param({
-        s : $scope.s
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+    $request.send '/disable_tag', { s : $scope.s }, 'POST', ((res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
       $scope.responseBody = res.body
-      $scope.getTags()
-
+      $scope.getTags()), ->
+      $scope.connecting = false
 ])
 
 
-app.controller('editTagController', ['$scope', '$http', ($scope, $http) ->
+app.controller('editTagController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.s = ''
   $scope.type = 'a'
   $scope.labelName = ''
@@ -101,21 +83,17 @@ app.controller('editTagController', ['$scope', '$http', ($scope, $http) ->
   # sumit
   $scope.submit = ->
     $scope.connecting = true
+    data =
+      type : $scope.type
+      tagname : $scope.tagName.value
+      labelname : $scope.labelName
+      ids : $scope.ids
 
-    $http({
-      url : '/edit_tag',
-      method : 'POST',
-      data : $.param({
-        type : $scope.type
-        tagname : $scope.tagName.value
-        labelname : $scope.labelName
-        ids : $scope.ids
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+    $request.send('/edit_tag', data, 'POST', ((res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
       $scope.responseBody = res.body
+    ), ->
+      $scope.connecting = false)
 
 ])

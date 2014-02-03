@@ -15,30 +15,22 @@ app.directive('feeds', ['$http', ($http) ->
   }
 ])
 
-app.controller('addSubscriptionController', ['$scope', '$http', ($scope, $http) ->
+app.controller('addSubscriptionController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.quickadd = ''
   $scope.connecting = false
   $scope.requestUrl = ''
   $scope.responseBody = ''
   $scope.submit = ->
     $scope.connecting = true
-
-    $http({
-      url : '/add_subscription',
-      method : 'POST',
-      data : $.param({
-        quickadd : $scope.quickadd
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+    $request.send('/add_subscription', { quickadd : $scope.quickadd }, 'POST', ((res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
-      $scope.responseBody = angular.fromJson(res.body)
+      $scope.responseBody = angular.fromJson(res.body)), ->
+      $scope.connecting = false)
 
 ]);
 
-app.controller('editSubscriptionController', ['$scope', '$http', ($scope, $http) ->
+app.controller('editSubscriptionController', ['$scope', '$http', '$request', ($scope, $http, $request) ->
   $scope.type = 'e'
   $scope.types = [
     {value : 'e', label : 'edit'},
@@ -49,7 +41,6 @@ app.controller('editSubscriptionController', ['$scope', '$http', ($scope, $http)
   $scope.t = ''
   $scope.a = ''
   $scope.r = ''
-
 
   $scope.connecting = false
   $scope.requestUrl = ''
@@ -77,24 +68,22 @@ app.controller('editSubscriptionController', ['$scope', '$http', ($scope, $http)
 
   $scope.submit = ->
     $scope.connecting = true
+    data =
+      type : $scope.type
+      s : $scope.s.id
+      feed : $scope.feed
+      t : $scope.t
+      a : $scope.a
+      r : $scope.r
 
-    $http({
-      url : '/edit_subscription',
-      method : 'POST',
-      data : $.param({
-        type : $scope.type
-        s : $scope.s.id
-        feed : $scope.feed
-        t : $scope.t
-        a : $scope.a
-        r : $scope.r
-      }),
-      headers :
-        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-    }).success (res) ->
+
+    $request.send('/edit_subscription', data, 'POST', ((res) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
       $scope.responseBody = res.body
-      $scope.getFeeds()
+      $scope.getFeeds())
+    , ->
+      $scope.connecting = false
+    )
 
 ]);

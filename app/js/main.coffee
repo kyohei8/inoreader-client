@@ -33,3 +33,20 @@ app.directive('tags', ->
   }
 )
 
+app.factory '$request', [ '$http', ($http) ->
+  {
+    send: (path, data, method, successFunc, errorFunc)->
+      $http({
+        url : path,
+        data : $.param(data),
+        method : method,
+        headers :
+          'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
+      }).success((res) ->
+        successFunc(res)
+      ).error( (data, status, h)->
+        window.alert("Error : Request Failed. (ErrorCode:#{status})")
+        errorFunc()
+      )
+  }
+]
