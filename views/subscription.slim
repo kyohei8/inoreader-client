@@ -12,7 +12,7 @@ tabset
                   input.form-control type="text" name="quickadd" ng-model="quickadd" placeholder="http://..."
               .form-group
                 .col-lg-10.col-lg-offset-2
-                  button.btn.btn-primary type="submit" ng-disabled="connecting" add
+                  button.btn.btn-primary ng-ladda="" type="submit" ng-disabled="connecting" add
       == slim :output
   tab heading="edit"
     .row ng-controller="editSubscriptionController"
@@ -49,6 +49,6 @@ tabset
                   input#edit-subscription-remove.form-control  type="text" name="r" ng-model="r" ng-disabled="rDisabled"
               .form-group
                 .col-lg-10.col-lg-offset-2
-                  button.btn.btn-primary type="submit" ng-disabled="connecting" edit
+                  button.btn.btn-primary ng-ladda="" type="submit" ng-disabled="connecting" edit
       == slim :output
 == js :subscription

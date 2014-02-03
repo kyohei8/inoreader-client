@@ -6,19 +6,30 @@ app.controller('navController', ['$scope', '$window', ($scope, $window) ->
     path is $window.location.pathname
 ]);
 
-app.directive('tags', ['$http', ($http) ->
-  link = (scope, element)->
-    # タグを取得
-    scope.getTags = ->
-      scope.connecting = true
-      $http.get('/tags').success((res) ->
-        scope.tags = res
-        scope.connecting = false)
-    scope.getTags()
+app.directive('ngLadda', ->
+  {
+  restrict: 'A'
+  link: (scope, $element) ->
+    $element.addClass('ladda-button')
+    $element.attr('data-style', 'expand-right')
+    l = Ladda.create($element[0]);
+    l.id = $element.text()
+    scope.$watch('connecting', (newVal) ->
+      if newVal isnt undefined
+        if newVal
+          l.start()
+        else
+          l.stop()
 
-  return {
-  restrict : 'E'
-  link : link
-  template : '<select class="form-control" value="" name="s" ng-model="s" ng-disabled="connecting"><option ng-repeat="tag in tags" value="{{tag}}">{{tag}}</option></select>'
+    )
   }
-])
+)
+
+app.directive('tags', ->
+  return {
+  restrict: 'E'
+  link: angular.noop()
+  template: '<select class="form-control" value="" name="s" ng-model="s" ng-disabled="connecting"><option ng-repeat="tag in tags" value="{{tag}}">{{tag}}</option></select>'
+  }
+)
+

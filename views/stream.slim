@@ -62,19 +62,6 @@
                     input type="radio" name="output" ng-model="$parent.output" ng-value="op.value" ng-disabled="true" {{op.label}}
           .form-group
             .col-lg-10.col-lg-offset-2
-              button.btn.btn-primary type="submit" ng-disabled="feedDisabled || connecting" Submit
+              button.btn.btn-primary ng-ladda="" type="submit" ng-disabled="feedDisabled || connecting" Submit
   == slim :output
-  /.col-lg-12
-    .panel.panel-default
-      .panel-heading Request Url
-      .panel-body
-        | {{requestUrl}}
-
-  /.col-lg-12
-    .panel.panel-default
-      .panel-heading Response Body
-      .panel-body
-        pre ng-hide="!responseBody"
-          | {{responseBody | json}}
-
 == js :stream

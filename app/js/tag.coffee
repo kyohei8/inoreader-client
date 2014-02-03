@@ -7,6 +7,14 @@ app.controller('renameTagController', ['$scope', '$http', ($scope, $http) ->
 
   $scope.connecting = false
 
+  # タグを取得
+  $scope.getTags = ->
+    $scope.connecting = true
+    $http.get('/tags').success((res) ->
+      $scope.tags = res
+      $scope.connecting = false)
+  $scope.getTags()
+
   # sumit
   $scope.submit = ->
     $scope.connecting = true
@@ -32,6 +40,7 @@ app.controller('renameTagController', ['$scope', '$http', ($scope, $http) ->
 app.controller('deleteTagController', ['$scope', '$http', ($scope, $http) ->
   $scope.s = ''
 
+  $scope.del = ''
   $scope.requestUrl = ''
   $scope.responseBody = ''
 
@@ -53,7 +62,6 @@ app.controller('deleteTagController', ['$scope', '$http', ($scope, $http) ->
       $scope.connecting = false
       $scope.requestUrl = res.url
       $scope.responseBody = res.body
-      $scope.getTags()
 
 ])
 

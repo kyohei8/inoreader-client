@@ -16,7 +16,7 @@ tabset
                   input.form-control type="text" name="dest" ng-model="dest" placeholder="tag name"
               .form-group
                 .col-lg-10.col-lg-offset-2
-                  button.btn.btn-primary type="submit" ng-disabled="connecting" rename
+                  button.btn.btn-primary ng-ladda="" type="submit" ng-disabled="connecting" rename
       == slim :output
   tab heading="Delete"
     .row ng-controller="deleteTagController"
@@ -31,7 +31,7 @@ tabset
                   tags
               .form-group
                 .col-lg-10.col-lg-offset-2
-                  button.btn.btn-primary type="submit" delete
+                  button.btn.btn-primary ng-ladda="" type="submit" ng-disabled="connecting" delete
       == slim :output
   tab heading="Edit"
     .row ng-controller="editTagController"
@@ -58,6 +58,6 @@ tabset
                   input#edit-tag-item.form-control type="text" name="ids" ng-model="ids" placeholder="tag:google.com,2005:reader/item/000000005bbc9da3"
               .form-group
                 .col-lg-10.col-lg-offset-2
-                  button.btn.btn-primary edit
+                  button.btn.btn-primary ng-ladda="" ng-disabled="connecting" edit
       == slim :output
 == js :tag

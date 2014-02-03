@@ -27,8 +27,8 @@ class App < Sinatra::Base
   assets do
     #serve '/css', from: 'app/css/'
     #serve '/js', from: 'app/js/'
-    css :bootstrap, %w(/css/bootstrap.css /css/app.css)
-    js :app, '/js/app.js', %w(/js/lib/angular.min.js /js/lib/ui-bootstrap-tpls.min.js /js/lib/jquery-2.0.3.min.js /js/main.js)
+    css :bootstrap, %w(/css/bootstrap.css /css/ladda-themeless.min.css /css/app.css)
+    js :app, '/js/app.js', %w(/js/lib/angular.min.js /js/lib/ui-bootstrap-tpls.min.js /js/lib/jquery-2.0.3.min.js /js/lib/ladda.js /js/lib/spin.min.js /js/main.js )
     js :subscription, '', ['/js/subscription.js']
     js :stream, '', ['/js/stream.js']
     js :tag, ['/js/tag.js']
