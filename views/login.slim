@@ -1,0 +1,21 @@
+.row
+  .col-lg-12
+    .well
+      form.form-horizontal role="form" action="/auth" method="post"
+        fieldset
+          legend Enter your InoReader Username ( or Email ) and Password.
+          .form-group
+            label.col-lg-2.control-label for="username" Username
+            .col-lg-4
+              input#username.form-control type='text' name="un" value=""
+          .form-group
+            label.col-lg-2.control-label for="password" Password
+            .col-lg-4
+              input#password.form-control type='password' name="pw" value=""
+          .form-group
+            .col-lg-10.col-lg-offset-2
+              button.btn.btn-primary type="submit" Login
+              a href="http://inoreader.com/index.php" target="_blank"
+                button.btn.btn-success type="button" Register »
+            .col-lg-10.col-lg-offset-2
+              span style="color:red" =@message
