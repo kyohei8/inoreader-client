@@ -1,31 +1,15 @@
-h1 Welcome to InoReader API App
-
-a href="http://wiki.inoreader.com/doku.php?id=api"
-  h4 API Reference
-
-- unless has_token
-  .row
-    .col-lg-12
-      .well
-        form.form-horizontal role="form" action="/auth" method="post"
-          fieldset
-            legend enter your InoReader username or Email and password.
-            .form-group
-              label.col-lg-2.control-label for="username" username
-              .col-lg-4
-                input#username.form-control type='text' name="un" value=""
-            .form-group
-              label.col-lg-2.control-label for="password" password
-              .col-lg-4
-                input#password.form-control type='password' name="pw" value=""
-            .form-group
-              .col-lg-2.col-lg-offset-2
-                button.btn.btn-primary type="submit" Login
-              .col-lg-8
-                span style="color:red" =@message
-- else
-  .row
-    .col-lg-12
-      p ="logined."
-      p style="font-size:small; color:#999"
-        | note: authToken has been stored in the session. If you close the browser, then it will be clear.
+.row
+  .col-lg-12
+    .page-header
+      h1 InoReader API App
+      p.text-muted This is InoReader Api Client.
+      - unless has_token
+        == slim :login
+      - else
+        .row
+          .col-lg-12
+            a href="http://wiki.inoreader.com/doku.php?id=api"
+              h4 API Reference
+            p ="logined."
+            p style="font-size:small; color:#999"
+              | note: authToken has been stored in the session. If you close the browser, then it will be clear.
