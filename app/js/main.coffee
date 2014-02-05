@@ -57,8 +57,7 @@ app.controller('indexController', ['$scope', '$http', '$timeout', ($scope, $http
     msg : 'Login Successed!'
     show: false
 
-  $scope.LoginSuccessAlert.show = false
-
+  #初回ログイン時のみアラートを表示
   $http.get('/firstlgoin').success((res)->
     if res.result
       $timeout(->
