@@ -1,4 +1,4 @@
-app = angular.module 'app', ['ui.bootstrap']
+app = angular.module 'app', ['ngAnimate', 'ui.bootstrap']
 window.app = app
 
 app.controller('navController', ['$scope', '$window', ($scope, $window) ->
@@ -35,18 +35,41 @@ app.directive('tags', ->
 
 app.factory '$request', [ '$http', ($http) ->
   {
-    send: (path, data, method, successFunc, errorFunc)->
-      $http({
-        url : path,
-        data : $.param(data),
-        method : method,
-        headers :
-          'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-      }).success((res) ->
-        successFunc(res)
-      ).error( (data, status, h)->
-        window.alert("Error : Request Failed. (ErrorCode:#{status})")
-        errorFunc()
-      )
+  send: (path, data, method, successFunc, errorFunc)->
+    $http({
+      url: path,
+      data: $.param(data),
+      method: method,
+      headers:
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    }).success((res) ->
+      successFunc(res)
+    ).error((data, status, h)->
+      window.alert("Error : Request Failed. (ErrorCode:#{status})")
+      errorFunc()
+    )
   }
 ]
+
+app.controller('indexController', ['$scope', '$http', '$timeout', ($scope, $http, $timeout) ->
+  $scope.LoginSuccessAlert =
+    type: 'info'
+    msg : 'Login Successed!'
+    show: false
+
+  $scope.LoginSuccessAlert.show = false
+
+  $http.get('/firstlgoin').success((res)->
+    if res.result
+      $timeout(->
+        $scope.LoginSuccessAlert.show = true
+        $timeout(->
+          $scope.LoginSuccessAlert.show = false
+        , 3000)
+      , 1000)
+  )
+
+  $scope.closeAlert = ->
+    $scope.LoginSuccessAlert.show = false
+
+]);

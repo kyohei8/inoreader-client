@@ -6,10 +6,10 @@
       - unless has_token
         == slim :login
       - else
-        .row
+        .row ng-controller="indexController"
           .col-lg-12
+            alert ng-show="LoginSuccessAlert.show" type="LoginSuccessAlert.type" close="closeAlert()" {{LoginSuccessAlert.msg}}
             a href="http://wiki.inoreader.com/doku.php?id=api"
               h4 API Reference
-            p ="logined."
             p style="font-size:small; color:#999"
               | note: authToken has been stored in the session. If you close the browser, then it will be clear.
