@@ -9,9 +9,4 @@ gem 'sinatra-assetpack'
 gem 'slim'
 gem 'httparty'
 gem 'coffee-script'
-#gem 'therubyracer'
-#gem 'less'
-
-#gem 'inoreader-client'
-
 gem 'inoreader-api'
