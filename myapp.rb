@@ -83,11 +83,11 @@ class App < Sinatra::Base
     begin
       ino = InoreaderApi::Api.new(:username => params['un'], :password => params['pw'])
       auth_token = ino.auth_token
-      user_id = ino.user_id
+      user = ino.user_info
 
       # encrypt token
       session[:auth_token] = AESCrypt.encrypt(auth_token, CRYPT_KEY, nil, 'AES-256-CBC')
-      session[:uid] = user_id.userId
+      session[:uid] = user.userId
       session[:logged_in] = true
 
       redirect to('/')
