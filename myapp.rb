@@ -103,11 +103,6 @@ class App < Sinatra::Base
     json_output ino.user_info.to_json
   end
 
-  get '/user_id' do
-    ino = InoreaderApi::Api.new :auth_token => token
-    json_output ino.user_id.to_json
-  end
-
   #トークンを取得
   get '/token' do
     ino = InoreaderApi::Api.new :auth_token => token
