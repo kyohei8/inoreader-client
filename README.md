@@ -1,10 +1,14 @@
 # inoreader API Demo with Sinatra
 
-http://wiki.inoreader.com/doku.php?id=api
+[InoReader API](http://wiki.inoreader.com/doku.php?id=api) and [InoReader API gem](https://github.com/kyohei8/inoreader-api) on Heroku!
 
-## install and start
+#### => http://inoreader-client.herokuapp.com/
+
+## Local test
+
+install and start
 
 ```sh
 $ bundle install
-$ bundle exec rackup
+$ foreman start
 ```
